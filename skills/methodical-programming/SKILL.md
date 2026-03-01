@@ -589,6 +589,9 @@ func TestReverseIsInvolution(t *testing.T) {
     rapid.Check(t, func(t *rapid.T) {
         l := rapid.SliceOf(rapid.Int()).Draw(t, "l")
         got := Reverse(Reverse(l))
+        if len(got) != len(l) {
+            t.Fatalf("len(Reverse(Reverse(%v))) = %d, want %d", l, len(got), len(l))
+        }
         for i := range l {
             if got[i] != l[i] {
                 t.Fatalf("Reverse(Reverse(%v)) = %v, want %v", l, got, l)
@@ -634,7 +637,21 @@ test "reverse — fuzz no-panic" {
     const input = std.testing.fuzzInput(.{});
     const allocator = std.testing.allocator;
     const n = input.len / @sizeOf(i32);
-    const data: []const i32 = @as([*]const i32, @alignCast(@ptrCast(input.ptr)))[0..n];
+
+    // Decode fuzz bytes into i32 values without assuming alignment.
+    var buf = std.ArrayList(i32).init(allocator);
+    defer buf.deinit();
+    try buf.ensureTotalCapacity(n);
+
+    var i: usize = 0;
+    while (i < n) : (i += 1) {
+        const base = i * @sizeOf(i32);
+        const chunk = input[base .. base + @sizeOf(i32)];
+        const value = std.mem.bytesToValue(i32, chunk);
+        buf.appendAssumeCapacity(value);
+    }
+
+    const data: []const i32 = buf.items;
     const result = reverse(allocator, data) catch return;
     defer allocator.free(result);
     try std.testing.expectEqual(data.len, result.len);
