@@ -355,3 +355,388 @@ When generating or reviewing code in **any language**:
 - When a recursive solution is not tail-recursive, consider **immersion** techniques to transform it.
 - Use **algebraic reasoning** over data structures: define operations by their equations, reason by structural induction.
 - Encode bounding functions as **decreasing measures** where the language supports it (e.g., Dafny's `decreases`, Coq's structural recursion, or manual assertions).
+
+---
+
+## Connecting Formal Specifications to Tests
+
+Formal specifications (preconditions and postconditions) and tests express the same idea in different languages: one in logic, the other in executable code. Deriving tests from the specification — rather than from the implementation — closes the loop: the tests are correct by the same reasoning that makes the code correct.
+
+### 1. Specification → Tests
+
+Every element of a formal specification maps to a concrete test:
+
+| Formal element | Test equivalent |
+|---|---|
+| Precondition violated | Unhappy-path test — assert the function signals an error |
+| Postcondition equality `r = E` | Equality assertion (`toBe`, `expectEqual`, `assert { condition = ... }`) |
+| Postcondition disjunction `A ∨ B` | One test per branch |
+| Base constructor (`[]`, `empty`, `0`) | Base-case test — verifies the quantifier's neutral element |
+| Inductive constructor (`e:l`, `plant(...)`) | Test with the minimum non-trivial value |
+
+**Worked example — `sum(list)`**
+
+```
+function sum(list) returns result
+  {Pre:  list is a list of numbers}
+  {Post: result = Σ(a: a ∈ list: a)}
+```
+
+The neutral element of `Σ` is `0`, so the base case is `sum([]) = 0`. The inductive constructor `e:l` produces the minimal test `sum([5]) = 5`, and the general case `sum([1, 2, 3]) = 6`.
+
+**TypeScript (Jest / Vitest)**
+
+```typescript
+// sum.test.ts
+import { sum } from "./sum";
+
+it("returns 0 for empty list — neutral element of Σ", () => {
+  expect(sum([])).toBe(0);
+});
+
+it("returns the element itself for a singleton — minimal inductive case", () => {
+  expect(sum([5])).toBe(5);
+});
+
+it("returns the total for a general list", () => {
+  expect(sum([1, 2, 3])).toBe(6);
+});
+
+it("rejects non-numbers — precondition violation", () => {
+  expect(() => sum(["a"] as any)).toThrow();
+});
+```
+
+**Go (testing)**
+
+```go
+// sum_test.go
+func TestSumEmptyList(t *testing.T) {
+    // Base case: neutral element of Σ is 0
+    if got := Sum([]int{}); got != 0 {
+        t.Errorf("Sum([]) = %d, want 0", got)
+    }
+}
+
+func TestSumSingleton(t *testing.T) {
+    // Minimal inductive case: one recursive step falling into base case
+    if got := Sum([]int{5}); got != 5 {
+        t.Errorf("Sum([5]) = %d, want 5", got)
+    }
+}
+
+func TestSumGeneralList(t *testing.T) {
+    if got := Sum([]int{1, 2, 3}); got != 6 {
+        t.Errorf("Sum([1,2,3]) = %d, want 6", got)
+    }
+}
+```
+
+### 2. Testing Recursive Cases
+
+Every recursive function has the structure:
+
+```
+function f(x):
+  if d(x)  → h(x)           -- direct case
+  ¬d(x)    → c(x, f(s(x)))  -- recursive case
+```
+
+This structure directly determines the test suite:
+
+- **Direct case** (`d(x)` is true): test the base case. The expected value is the neutral element of the quantifier that the postcondition expresses.
+- **Minimal recursive case** (`¬d(x)` with `s(x)` falling into the direct case): test with the smallest input that triggers exactly one recursive call.
+- **General case**: test with an input that triggers multiple recursive calls.
+- **Bounding function `t(x)`**: when termination is non-obvious, use a call counter or spy to confirm the number of recursive calls does not exceed `t(x_initial)`.
+
+**Worked example — `length(list)`**
+
+```
+function length(list) returns n
+  {Pre:  list is a list}
+  {Post: n = N(a: a ∈ list: true)}
+  if list = []  → n := 0                      -- d(x): list is empty
+  list ≠ []     → n := 1 + length(tail(list)) -- recursive case
+```
+
+Bounding function: `t(list) = length(list)` (the size of the input structure).
+
+**TypeScript (Jest / Vitest)**
+
+```typescript
+// length.test.ts
+import { length } from "./length";
+
+it("returns 0 for empty list — direct case, neutral of N", () => {
+  expect(length([])).toBe(0);
+});
+
+it("returns 1 for singleton — one recursive call into base", () => {
+  expect(length([7])).toBe(1);
+});
+
+it("returns correct length for general list", () => {
+  expect(length([1, 2, 3])).toBe(3);
+});
+```
+
+**Go (testing)**
+
+```go
+// length_test.go
+func TestLengthEmpty(t *testing.T) {
+    if got := Length([]int{}); got != 0 {
+        t.Errorf("Length([]) = %d, want 0", got)
+    }
+}
+
+func TestLengthSingleton(t *testing.T) {
+    if got := Length([]int{7}); got != 1 {
+        t.Errorf("Length([7]) = %d, want 1", got)
+    }
+}
+
+func TestLengthGeneral(t *testing.T) {
+    if got := Length([]int{1, 2, 3}); got != 3 {
+        t.Errorf("Length([1,2,3]) = %d, want 3", got)
+    }
+}
+```
+
+**Zig (std.testing + comptime table)**
+
+Zig's idiomatic pattern for multiple cases is `inline for` over a `comptime` array — zero-cost parametric tests with no external library:
+
+```zig
+const std = @import("std");
+const length = @import("length").length;
+
+test "length — direct case, recursive case, general" {
+    const cases = comptime [_]struct {
+        input: []const i32,
+        expected: usize,
+    }{
+        .{ .input = &[_]i32{},        .expected = 0 }, // direct case: d(x)
+        .{ .input = &[_]i32{7},       .expected = 1 }, // minimal recursive case
+        .{ .input = &[_]i32{ 1, 2, 3 }, .expected = 3 }, // general case
+    };
+
+    inline for (cases) |c| {
+        try std.testing.expectEqual(c.expected, length(c.input));
+    }
+}
+```
+
+### 3. Property-Based Testing for Universal Postconditions
+
+When the postcondition contains a universal quantifier (`∀`), manual tests verify only finitely many cases of an infinite truth. Property-based testing (PBT) generates random inputs, checks the property for each, and — on failure — shrinks the counterexample to the minimal failing case.
+
+**Rule:** if the postcondition has the form `∀x ∈ domain: P(x)`, write a property test, not just examples.
+
+**Worked example — algebraic properties of `reverse`**
+
+```
+{Post₁: ∀l: length(reverse(l)) = length(l)}   -- reverse preserves length
+{Post₂: ∀l: reverse(reverse(l)) = l}           -- reverse is an involution
+```
+
+**TypeScript — fast-check**
+
+```typescript
+// reverse.property.test.ts
+import * as fc from "fast-check";
+import { reverse } from "./reverse";
+
+test("Post₁: reverse preserves length — ∀l", () => {
+  fc.assert(
+    fc.property(fc.array(fc.integer()), (l) => {
+      return reverse(l).length === l.length;
+    })
+  );
+});
+
+test("Post₂: reverse is an involution — ∀l", () => {
+  fc.assert(
+    fc.property(fc.array(fc.integer()), (l) => {
+      const rr = reverse(reverse(l));
+      return rr.length === l.length && l.every((v, i) => v === rr[i]);
+    })
+  );
+});
+```
+
+**Go — rapid**
+
+```go
+// reverse_property_test.go
+import (
+    "testing"
+    "pgregory.net/rapid"
+)
+
+func TestReversePreservesLength(t *testing.T) {
+    // Post₁: ∀l: length(reverse(l)) = length(l)
+    rapid.Check(t, func(t *rapid.T) {
+        l := rapid.SliceOf(rapid.Int()).Draw(t, "l")
+        if len(Reverse(l)) != len(l) {
+            t.Fatalf("length(Reverse(%v)) ≠ length(%v)", l, l)
+        }
+    })
+}
+
+func TestReverseIsInvolution(t *testing.T) {
+    // Post₂: ∀l: reverse(reverse(l)) = l
+    rapid.Check(t, func(t *rapid.T) {
+        l := rapid.SliceOf(rapid.Int()).Draw(t, "l")
+        got := Reverse(Reverse(l))
+        if len(got) != len(l) {
+            t.Fatalf("len(Reverse(Reverse(%v))) = %d, want %d", l, len(got), len(l))
+        }
+        for i := range l {
+            if got[i] != l[i] {
+                t.Fatalf("Reverse(Reverse(%v)) = %v, want %v", l, got, l)
+            }
+        }
+    })
+}
+```
+
+**Zig — comptime table + built-in fuzzer**
+
+Zig has no idiomatic PBT library. Use two complementary approaches:
+
+1. **`inline for` over `comptime` array** for representative cases derived from the specification (base, minimal inductive, edge values).
+2. **`zig test --fuzz`** for no-crash / no-panic invariants — the built-in fuzzer feeds arbitrary bytes and catches panics, out-of-bounds accesses, and undefined behavior.
+
+```zig
+const std = @import("std");
+const reverse = @import("reverse").reverse;
+
+// Post₁ + Post₂: representative cases covering base and inductive constructors
+test "reverse — spec-derived cases" {
+    const allocator = std.testing.allocator;
+    const cases = comptime [_]struct {
+        input: []const i32,
+        expected: []const i32,
+    }{
+        .{ .input = &[_]i32{},        .expected = &[_]i32{} },
+        .{ .input = &[_]i32{1},       .expected = &[_]i32{1} },
+        .{ .input = &[_]i32{ 1, 2, 3 }, .expected = &[_]i32{ 3, 2, 1 } },
+    };
+
+    inline for (cases) |c| {
+        const result = try reverse(allocator, c.input);
+        defer allocator.free(result);
+        try std.testing.expectEqual(c.expected.len, result.len);
+        try std.testing.expectEqualSlices(i32, c.expected, result);
+    }
+}
+
+// Post₁ no-panic invariant: reverse must not crash on any input
+test "reverse — fuzz no-panic" {
+    const input = std.testing.fuzzInput(.{});
+    const allocator = std.testing.allocator;
+    const n = input.len / @sizeOf(i32);
+
+    // Decode fuzz bytes into i32 values without assuming alignment.
+    var buf = std.ArrayList(i32).init(allocator);
+    defer buf.deinit();
+    try buf.ensureTotalCapacity(n);
+
+    var i: usize = 0;
+    while (i < n) : (i += 1) {
+        const base = i * @sizeOf(i32);
+        const chunk = input[base .. base + @sizeOf(i32)];
+        const value = std.mem.bytesToValue(i32, chunk);
+        buf.appendAssumeCapacity(value);
+    }
+
+    const data: []const i32 = buf.items;
+    const result = reverse(allocator, data) catch return;
+    defer allocator.free(result);
+    try std.testing.expectEqual(data.len, result.len);
+}
+// Run with: zig test reverse_test.zig --fuzz
+```
+
+**Terraform — native `terraform test` (`.tftest.hcl`)**
+
+Terraform has no PBT. Universal postconditions (`∀`) are expressed with `alltrue([for ... : ...])` inside an `assert` block. Boundary cases and precondition violations each get a separate `run` block — there are no loops in `.tftest.hcl`.
+
+```hcl
+# tests/subnets_unit_test.tftest.hcl
+
+# Post: ∀subnet ∈ aws_subnet.private: subnet.cidr_block ∈ "10.0.0.0/8"
+run "all_private_subnets_in_range" {
+  command = plan
+
+  assert {
+    condition = alltrue([
+      for s in aws_subnet.private : can(regex("^10\\.0\\.", s.cidr_block))
+    ])
+    error_message = "All private subnets must be in the 10.0.x.x range."
+  }
+}
+
+# Pre violated: cidr_block outside allowed range must be rejected
+run "invalid_cidr_rejected" {
+  command = plan
+
+  variables {
+    cidr_block = "192.168.1.0/24"
+  }
+
+  expect_failures = [var.cidr_block]
+}
+
+# Boundary: minimum allowed subnet count
+run "minimum_subnet_count" {
+  command = plan
+  variables { subnet_count = 1 }
+
+  assert {
+    condition     = length(aws_subnet.private) == 1
+    error_message = "Expected exactly 1 subnet."
+  }
+}
+
+# Boundary: zero subnets must be rejected by variable validation
+run "zero_subnets_rejected" {
+  command = plan
+  variables { subnet_count = 0 }
+
+  expect_failures = [var.subnet_count]
+}
+```
+
+### 4. The Combined Workflow
+
+Formal derivation and TDD are not alternatives — they are two layers of the same process. The specification is the source of truth; both the code and the tests are derived from it independently.
+
+```
+1. Specify   Write Pre and Post formally.
+             Identify the quantifier structure (Σ, ∀, N, ...) and its neutral element.
+             Identify constructors of the input type (base + inductive).
+
+2. Red       Translate Pre/Post into tests — all must fail (code does not exist yet):
+             · Pre violated              → unhappy-path test / expect_failures
+             · Base constructor          → test of the quantifier's neutral element
+             · Minimal inductive case    → test with one recursive step into base
+             · Postcondition with ∀      → property test (fast-check / rapid)
+                                           or alltrue([for...]) in Terraform
+             · Each postcondition branch → one test per disjunct
+
+3. Derive    Construct the code from the postcondition analysis (not from the tests).
+             Choose the strategy that matches the postcondition structure:
+             equalities → assignment, disjunctions → conditional, inductive → recursion/loop.
+
+4. Green     The tests pass on the first run — by construction, not by adjustment.
+             If a test fails, the derivation has a gap: re-examine the proof obligation.
+
+5. Refactor  Improve structure, names, efficiency. The tests stay green.
+             The formal invariant guarantees that refactoring preserves correctness.
+             Immersion (tail-recursion transformation) is a safe refactoring step
+             because the postcondition is unchanged.
+```
+
+**Key insight:** when code and tests are both derived from the same specification, the red-green-refactor cycle collapses into **specify → derive → verify**. Tests written against the specification — not against the implementation — cannot be accidentally made to pass by wrong code that happens to match the test. They fail for the right reason and pass for the right reason.

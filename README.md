@@ -30,12 +30,6 @@ Use this when you want your agent to manage a software project with Scrum on Git
 
 Best for: starting new projects from scratch with an MVP, organizing work into sprints, maintaining a healthy backlog, and keeping a sustainable development cadence on GitHub.
 
-### [tdd](skills/tdd/SKILL.md)
-
-Use this when you want your agent to follow test-driven development instead of writing code and bolting tests on afterwards. The skill teaches the red-green-refactor loop: write a failing test, make it pass with the minimum code, then clean up — in cycles short enough to keep the design honest. Covers unit test isolation and the Arrange-Act-Assert pattern, integration test strategies at real boundaries (HTTP, database, message queues), test organization across layers, and the right things to test (and not test). Language-agnostic — examples in Python, TypeScript, and Go.
-
-Best for: any feature or bug fix where you want real coverage, not coverage theatre.
-
 ## Under the Hood
 
 Each skill lives in `skills/<name>/SKILL.md` — a Markdown file with YAML frontmatter (`name` and `description`). The `npx skills` CLI reads this structure directly from the GitHub repo. To add a new skill, create a directory under `skills/` with a `SKILL.md` inside it. No build step, no config files, no registry.
