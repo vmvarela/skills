@@ -559,7 +559,7 @@ test("Post₂: reverse is an involution — ∀l", () => {
   fc.assert(
     fc.property(fc.array(fc.integer()), (l) => {
       const rr = reverse(reverse(l));
-      return l.every((v, i) => v === rr[i]);
+      return rr.length === l.length && l.every((v, i) => v === rr[i]);
     })
   );
 });
