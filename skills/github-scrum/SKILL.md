@@ -494,6 +494,25 @@ categories:
       - "type:spike"
 change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
 change-title-escapes: '\<*_&'
+autolabeler:
+  - label: "type:feature"
+    title:
+      - '/^feat(\(.+\))?!?:/i'
+  - label: "type:bug"
+    title:
+      - '/^fix(\(.+\))?!?:/i'
+  - label: "type:docs"
+    title:
+      - '/^docs(\(.+\))?!?:/i'
+  - label: "type:chore"
+    title:
+      - '/^(chore|refactor|test|build|ci|perf|style)(\(.+\))?!?:/i'
+  - label: "type:spike"
+    title:
+      - '/^spike(\(.+\))?!?:/i'
+  - label: "breaking"
+    title:
+      - '/^[a-z]+(\(.+\))?!:/i'
 version-resolver:
   major:
     labels:
@@ -508,6 +527,8 @@ version-resolver:
       - "type:docs"
   default: patch
 ```
+
+> **Note:** `autolabeler` labels PRs automatically from the conventional commit prefix in the title (`feat:` → `type:feature`, `fix:` → `type:bug`, etc.), so no manual labeling is needed for release-drafter to categorize and version PRs correctly.
 
 ### 6. Create Workflows
 
@@ -578,8 +599,8 @@ name: Release Drafter
 on:
   push:
     branches: [main, master]
-  pull_request:
-    types: [opened, reopened, synchronize]
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited]
 
 permissions:
   contents: write
@@ -754,7 +775,7 @@ The agent can help with these activities at any time:
   - Starting work: add `status:in-progress`, remove `status:ready`
   - Submitting PR: add `status:review`, remove `status:in-progress`
   - Blocked: add `status:blocked`, remove `status:in-progress`
-  - Done: remove all `status:*` labels (issue gets closed)
+  - Done: remove all `status:*` labels, then close the issue (see [Applying the Definition of Done](#applying-the-definition-of-done))
 
 - **Mid-sprint scope change.** If the user wants to add/remove issues from the sprint, update the milestone assignment. Never endanger the Sprint Goal — if adding scope, consider removing equal-sized items.
 
@@ -795,13 +816,14 @@ When the sprint ends (milestone due date reached or all issues closed):
      milestone: <milestone-number>
      state: "open"
 
-   # Remove milestone from uncompleted issues (return to backlog)
+   # Remove milestone and reset status labels (return to backlog)
    tool: mcp_github_github_issue_write
    params:
      owner: <owner>
      repo: <repo>
      issue_number: <number>
      milestone: null
+     labels: [<existing labels minus any "status:*" labels, plus "status:ready">]
    ```
 
    **Using `gh` CLI (fallback):**
@@ -811,8 +833,8 @@ When the sprint ends (milestone due date reached or all issues closed):
    GH_PAGER=cat gh issue list --milestone "Sprint N" --state open --json number,title \
      -q '.[] | "#\(.number) \(.title)"'
 
-   # Remove milestone from uncompleted issues (return to backlog)
-   GH_PAGER=cat gh issue edit <number> --milestone ""
+   # Remove milestone and reset status labels (return to backlog)
+   GH_PAGER=cat gh issue edit <number> --milestone "" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" --add-label "status:ready"
    ```
 
 3. **Create a release** if there is a usable Increment:
@@ -895,7 +917,7 @@ params:
   body: "Part of #<original-number>\n\n## Description\n\n<details>\n\n## Acceptance Criteria\n\n- [ ] <specific criterion>"
   labels: ["type:feature", "priority:high", "size:m"]
 
-# Close original with comment
+# Close original with comment (remove status:* labels)
 tool: mcp_github_github_add_issue_comment
 params:
   owner: <owner>
@@ -908,6 +930,7 @@ params:
   owner: <owner>
   repo: <repo>
   issue_number: <original-number>
+  labels: [<existing labels minus any "status:*" labels>]
   state: "closed"
 ```
 
@@ -920,7 +943,8 @@ GH_PAGER=cat gh issue create \
   --body "Part of #<original-number>\n\n## Description\n\n<details>\n\n## Acceptance Criteria\n\n- [ ] <specific criterion>" \
   --label "type:feature,priority:high,size:m"
 
-# Close original with reference
+# Close original with reference (remove status:* labels first)
+GH_PAGER=cat gh issue edit <original-number> --remove-label "status:ready" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" 2>/dev/null
 GH_PAGER=cat gh issue close <original-number> --comment "Split into #<sub1>, #<sub2>, #<sub3>"
 ```
 
@@ -1001,6 +1025,7 @@ Every issue must meet these criteria before closing. The agent validates this ch
 - [ ] No lint or compilation errors
 - [ ] Self-reviewed (read your own diff before closing)
 - [ ] Documentation updated (if user-facing behavior changed)
+- [ ] All `status:*` labels removed from the issue
 - [ ] Issue closed with reference to the commit or PR
 
 ### Applying the Definition of Done
@@ -1009,7 +1034,7 @@ When the user says an issue is done, verify:
 
 1. **Check acceptance criteria** — read the issue body, confirm each criterion is checked
 2. **Check code quality** — run lint/tests if configured
-3. **Close the issue** with a reference:
+3. **Remove `status:*` labels and close the issue** with a reference:
 
    **Using MCP (preferred):**
 
@@ -1021,17 +1046,20 @@ When the user says an issue is done, verify:
      issue_number: <number>
      body: "Done in <commit-sha or PR #>"
 
+   # Remove all status:* labels before closing
    tool: mcp_github_github_issue_write
    params:
      owner: <owner>
      repo: <repo>
      issue_number: <number>
+     labels: [<existing labels minus any "status:*" labels>]
      state: "closed"
    ```
 
    **Using `gh` CLI (fallback):**
 
    ```sh
+   GH_PAGER=cat gh issue edit <number> --remove-label "status:ready" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" 2>/dev/null
    GH_PAGER=cat gh issue close <number> --comment "Done in <commit-sha or PR #>"
    ```
 
