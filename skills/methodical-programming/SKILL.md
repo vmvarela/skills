@@ -1,6 +1,6 @@
 ---
 name: methodical-programming
-description: Apply rigorous, mathematically-grounded program construction and verification. Derive correct programs from formal pre/post specifications using axiomatic semantics, structural induction, recursive design with bounding functions, algorithm immersion, and iterative derivation with loop invariants. Language-agnostic.
+description: Apply rigorous, mathematically-grounded program construction and verification. Derive correct programs from formal pre/post specifications using axiomatic semantics, structural induction, recursive design with bounding functions, algorithm immersion, and iterative derivation with loop invariants. Language-agnostic. Use this skill whenever the user wants to implement a function correctly, reason about loops or recursion, write formal specifications, derive tests from postconditions, prove termination, design data structures algebraically, or ensure program correctness by construction — even if they don't use terms like "formal methods" or "specification".
 ---
 
 # Methodical Programming (Programación Metódica)

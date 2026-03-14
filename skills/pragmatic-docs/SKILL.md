@@ -1,6 +1,6 @@
 ---
 name: pragmatic-docs
-description: Write concise, useful project documentation (READMEs, guides, docs/) inspired by Philip Greenspun's pragmatic style. Use when creating or improving README.md, writing module docs, CONTRIBUTING.md, or structuring any project documentation for software projects.
+description: Write concise, useful project documentation (READMEs, guides, docs/) inspired by Philip Greenspun's pragmatic style. Use when creating or improving README.md, writing module docs, CONTRIBUTING.md, architecture docs, CHANGELOG, or structuring any project documentation for software projects. Use this skill whenever the user needs to write, rewrite, or review any form of project documentation — even if they just say "write a README" or "document this" without asking for a specific style.
 ---
 
 # Pragmatic Documentation
