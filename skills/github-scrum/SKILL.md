@@ -1,6 +1,6 @@
 ---
 name: github-scrum
-description: Manage software projects with Scrum on GitHub. Plan MVPs, maintain a Product Backlog as Issues, run Sprints as Milestones, and automate setup with GitHub MCP tools (preferred) or gh CLI (fallback). Adapted for solo developers and small teams (1-3 people). Use this skill whenever the user mentions sprints, issues, backlog, milestones, pull requests, project planning, releases, retrospectives, or any aspect of managing software work on GitHub — even if they don't explicitly mention Scrum.
+description: Manage software projects with Scrum on GitHub. Plan MVPs, maintain a Product Backlog as Issues, run Sprints as Milestones, and automate setup with the gh CLI. Adapted for solo developers and small teams (1-3 people). Use this skill whenever the user mentions sprints, issues, backlog, milestones, pull requests, project planning, releases, retrospectives, or any aspect of managing software work on GitHub — even if they don't explicitly mention Scrum.
 ---
 
 # GitHub Scrum
@@ -13,11 +13,7 @@ Reference: [The 2020 Scrum Guide](https://scrumguides.org/scrum-guide.html).
 
 ## Tooling Strategy
 
-**Prefer GitHub MCP tools** (`mcp_github_github_*`) for all operations they support. Fall back to the `gh` CLI **only** when the MCP server does not expose the needed functionality.
-
-The MCP server supports: Issues, Pull Requests, Branches, Releases, Labels (read), Files, Commits, Repository operations.
-
-The MCP server does **not** support: label create/delete/list, milestones (use `gh api`), release creation.
+**Use the `gh` CLI for all GitHub operations.** It is the primary and default tool for this skill.
 
 > Always set `GH_PAGER=cat` when running `gh` commands to prevent interactive pagers from blocking script execution.
 
@@ -56,8 +52,6 @@ Use namespaced labels with prefixes for filtering. Create all labels during proj
 | **Status** | `status:ready` `status:in-progress` `status:blocked` `status:review` |
 | **Special** | `mvp` `tech-debt` `retrospective` `stale` |
 
-Colors and descriptions — use `gh` CLI to create (MCP does not support label creation):
-
 ```sh
 # Remove default labels
 GH_PAGER=cat gh label list --json name -q '.[].name' | xargs -I {} GH_PAGER=cat gh label delete {} --yes
@@ -95,19 +89,12 @@ Ask the user: *"In 1-2 sentences, what is the product and what problem does it s
 
 Create a pinned issue titled **Product Goal**:
 
-```
-tool: mcp_github_github_issue_write
-params:
-  owner: <owner>
-  repo: <repo>
-  title: "Product Goal"
-  body: "## Vision\n\n<user's answer>\n\n## Target Users\n\n<who benefits>\n\n## Success Criteria\n\n- [ ] <measurable outcome>"
-  labels: ["type:docs"]
-```
-
-Then pin it (MCP does not support pinning):
-
 ```sh
+GH_PAGER=cat gh issue create \
+  --title "Product Goal" \
+  --body "## Vision\n\n<user's answer>\n\n## Target Users\n\n<who benefits>\n\n## Success Criteria\n\n- [ ] <measurable outcome>" \
+  --label "type:docs"
+
 GH_PAGER=cat gh issue pin <issue-number>
 ```
 
@@ -122,7 +109,14 @@ For each feature idea, apply: *"Without this, does the product make no sense?"*
 - Important but not essential → `priority:medium`
 - Nice to have → `priority:low`
 
-Keep the MVP to 3-7 features. Create each as an issue with **Acceptance Criteria** as a checklist.
+Keep the MVP to 3-7 features. Create each as an issue with **Acceptance Criteria** as a checklist:
+
+```sh
+GH_PAGER=cat gh issue create \
+  --title "<feature title>" \
+  --body "## Description\n\n<what and why>\n\n## Acceptance Criteria\n\n- [ ] <criterion 1>\n- [ ] <criterion 2>\n\n## Notes\n\n<technical notes, constraints, dependencies>" \
+  --label "type:feature,priority:high,size:m,mvp"
+```
 
 ### 4. Create the First Sprint
 
@@ -135,13 +129,8 @@ GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
 
 Assign issues to the milestone:
 
-```
-tool: mcp_github_github_issue_write
-params:
-  owner: <owner>
-  repo: <repo>
-  issue_number: <number>
-  milestone: <milestone-number>
+```sh
+GH_PAGER=cat gh issue edit <number> --milestone "Sprint 1"
 ```
 
 ### 5. Create Repository Scaffolding
@@ -164,24 +153,55 @@ mkdir -p .github/ISSUE_TEMPLATE .github/workflows
 ### Sprint Planning
 
 1. **Review the backlog** — list `status:ready` issues with no milestone:
-   ```
-   tool: mcp_github_github_search_issues
-   params:
-     q: "repo:<owner>/<repo> is:issue is:open label:status:ready no:milestone"
+
+   ```sh
+   GH_PAGER=cat gh issue list --label "status:ready" --milestone "" \
+     --json number,title,labels \
+     --jq '.[] | "#\(.number) \(.title) [\(.labels | map(.name) | join(", "))]"'
    ```
 
 2. **Propose sprint selection** based on: `critical` > `high` > `medium` > `low`, MVP items first, capacity fits duration.
 
 3. **Define the Sprint Goal** — ask: *"What is the single most important outcome of this sprint?"*
 
-4. **Create milestone and assign issues** (see Sprint Planning commands in [references/tooling.md](references/tooling.md)).
+4. **Create milestone and assign issues:**
 
-5. **Mark issues as in-progress** when work begins — add `status:in-progress`, remove `status:ready`.
+   ```sh
+   # Get next sprint number
+   SPRINT_NUM=$(GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --jq 'length + 1')
+
+   # Create milestone
+   GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
+     --field title="Sprint ${SPRINT_NUM}" \
+     --field description="Sprint Goal: <goal>" \
+     --field due_on="<due date ISO 8601>"
+
+   # Assign issues
+   GH_PAGER=cat gh issue edit <number> --milestone "Sprint ${SPRINT_NUM}"
+   ```
+
+5. **Mark issues as in-progress** when work begins:
+
+   ```sh
+   GH_PAGER=cat gh issue edit <number> --add-label "status:in-progress" --remove-label "status:ready"
+   ```
 
 ### During the Sprint
 
-- **Progress report** — list open/closed issues on the milestone.
-- **Identify blockers** — search for `label:status:blocked`.
+- **Progress report:**
+
+  ```sh
+  MILESTONE="Sprint N"
+  echo "=== Open ===" && GH_PAGER=cat gh issue list --milestone "$MILESTONE" --state open --json number,title -q '.[] | "#\(.number) \(.title)"'
+  echo "=== Closed ===" && GH_PAGER=cat gh issue list --milestone "$MILESTONE" --state closed --json number,title -q '.[] | "#\(.number) \(.title)"'
+  ```
+
+- **Identify blockers:**
+
+  ```sh
+  GH_PAGER=cat gh issue list --label "status:blocked" --json number,title -q '.[] | "#\(.number) \(.title)"'
+  ```
+
 - **Update status labels** as issues move:
   - Starting → `status:in-progress` (remove `status:ready`)
   - PR open → `status:review` (remove `status:in-progress`)
@@ -191,22 +211,35 @@ mkdir -p .github/ISSUE_TEMPLATE .github/workflows
 ### Sprint Review
 
 1. List completed issues (closed on milestone).
-2. Move carryover issues back to backlog: remove milestone, remove `status:*` labels, add `status:ready`.
-3. Create a release if there is a usable Increment (`gh release create`).
-4. Close the milestone (`gh api ... --method PATCH --field state="closed"`).
+2. Move carryover issues back to backlog:
+
+   ```sh
+   GH_PAGER=cat gh issue edit <number> --milestone "" \
+     --remove-label "status:in-progress" --remove-label "status:blocked" \
+     --remove-label "status:review" --add-label "status:ready"
+   ```
+
+3. Create a release if there is a usable Increment:
+
+   ```sh
+   GH_PAGER=cat gh release create v<version> --title "Sprint N Release" \
+     --notes "## What's New\n\n$(GH_PAGER=cat gh issue list --milestone 'Sprint N' --state closed --json number,title -q '.[] | "- #\(.number) \(.title)"')\n\n## Sprint Goal\n\n<goal summary>"
+   ```
+
+4. Close the milestone:
+
+   ```sh
+   MILESTONE_NUM=$(GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --jq '.[] | select(.title=="Sprint N") | .number')
+   GH_PAGER=cat gh api repos/{owner}/{repo}/milestones/${MILESTONE_NUM} --method PATCH --field state="closed"
+   ```
 
 ### Sprint Retrospective
 
-Create a retrospective issue with label `retrospective`:
-
-```
-tool: mcp_github_github_issue_write
-params:
-  owner: <owner>
-  repo: <repo>
-  title: "Retrospective: Sprint N"
-  body: "## What went well?\n\n- \n\n## What could be improved?\n\n- \n\n## Action items for next sprint\n\n- [ ] \n\n## Metrics\n\n- **Planned:** X issues\n- **Completed:** Y issues\n- **Carried over:** Z issues\n- **Sprint Goal met:** Yes/No"
-  labels: ["retrospective"]
+```sh
+GH_PAGER=cat gh issue create \
+  --title "Retrospective: Sprint N" \
+  --label "retrospective" \
+  --body "## What went well?\n\n- \n\n## What could be improved?\n\n- \n\n## Action items for next sprint\n\n- [ ] \n\n## Metrics\n\n- **Planned:** X issues\n- **Completed:** Y issues\n- **Carried over:** Z issues\n- **Sprint Goal met:** Yes/No"
 ```
 
 ---
@@ -215,17 +248,39 @@ params:
 
 ### Split Large Issues (`size:xl`)
 
-1. Create sub-issues linked with "Part of #N".
-2. Close the original with a comment listing the new issues.
-3. Remove all `status:*` labels from the original before closing.
+1. Create sub-issues linked with "Part of #N":
+
+   ```sh
+   GH_PAGER=cat gh issue create \
+     --title "<specific sub-task>" \
+     --body "Part of #<original-number>\n\n## Acceptance Criteria\n\n- [ ] <specific criterion>" \
+     --label "type:feature,priority:high,size:m"
+   ```
+
+2. Close the original with a comment listing the new issues (remove `status:*` labels first):
+
+   ```sh
+   GH_PAGER=cat gh issue edit <original-number> --remove-label "status:ready" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" 2>/dev/null
+   GH_PAGER=cat gh issue close <original-number> --comment "Split into #<sub1>, #<sub2>, #<sub3>"
+   ```
 
 ### Add Missing Details
 
-For issues without acceptance criteria: propose concrete criteria, update body, add `status:ready`.
+For issues without acceptance criteria: propose concrete criteria, update body, add `status:ready`:
+
+```sh
+GH_PAGER=cat gh issue edit <number> --body "<refined body with acceptance criteria>"
+GH_PAGER=cat gh issue edit <number> --add-label "status:ready"
+```
 
 ### Reprioritize
 
-List open backlog items (no milestone), review with the user, update priority labels.
+List open backlog items (no milestone), review with the user, update priority labels:
+
+```sh
+GH_PAGER=cat gh issue list --state open --milestone "" --json number,title,labels \
+  -q '.[] | "#\(.number) \(.title) [\(.labels | map(.name) | join(", "))]"'
+```
 
 ---
 
@@ -250,22 +305,10 @@ When the user says an issue is done:
 2. **Check code quality** — run lint/tests if configured.
 3. **Remove `status:*` labels and close** with a reference:
 
-```
-tool: mcp_github_github_add_issue_comment
-params:
-  owner: <owner>
-  repo: <repo>
-  issue_number: <number>
-  body: "Done in <commit-sha or PR #>"
-
-tool: mcp_github_github_issue_write
-params:
-  owner: <owner>
-  repo: <repo>
-  issue_number: <number>
-  labels: [<existing labels minus any "status:*" labels>]
-  state: "closed"
-```
+   ```sh
+   GH_PAGER=cat gh issue edit <number> --remove-label "status:ready" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" 2>/dev/null
+   GH_PAGER=cat gh issue close <number> --comment "Done in <commit-sha or PR #>"
+   ```
 
 If any criterion is not met, tell the user what's missing before closing.
 
@@ -273,13 +316,8 @@ If any criterion is not met, tell the user what's missing before closing.
 
 When a PR is closed or merged, **remove all `status:*` labels from the linked issue**. Status labels represent transient workflow state and must not remain as permanent metadata after the work is done.
 
-```
-tool: mcp_github_github_issue_write
-params:
-  owner: <owner>
-  repo: <repo>
-  issue_number: <linked-issue-number>
-  labels: [<existing labels minus any "status:*" labels>]
+```sh
+GH_PAGER=cat gh issue edit <linked-issue-number> --remove-label "status:ready" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" 2>/dev/null
 ```
 
 ---
