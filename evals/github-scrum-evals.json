@@ -53,7 +53,7 @@
         {
           "id": "assigns-to-sprint-milestone",
           "type": "llm",
-          "text": "Assigns the new issue to Sprint 2 milestone with --milestone 'Sprint 2'"
+          "text": "Assigns the new issue to Sprint 2 milestone (using --milestone 'Sprint 2', --milestone <number>, or equivalent)"
         },
         {
           "id": "shows-sprint-capacity",
