@@ -30,6 +30,12 @@ Use this when you want your agent to manage a software project with Scrum on Git
 
 Best for: starting new projects from scratch with an MVP, organizing work into sprints, maintaining a healthy backlog, and keeping a sustainable development cadence on GitHub.
 
+### [github-jira](skills/github-jira/SKILL.md)
+
+Use this when your team already uses JIRA Cloud and you want your agent to bridge it with GitHub. The JIRA ticket key (e.g. `PROJECT-123`) becomes the thread that connects branches, PRs, and releases. Includes GitHub Actions that auto-label PRs with priority and size pulled from JIRA fields, and sync GitHub Releases back to JIRA versions. Works with any JIRA project — configure it once with your domain, project key, board name, and component.
+
+Best for: teams running Scrum in JIRA who want GitHub PRs and releases to stay in sync with tickets automatically, without manual copy-paste between tools.
+
 ## Under the Hood
 
 Each skill lives in `skills/<name>/SKILL.md` — a Markdown file with YAML frontmatter (`name` and `description`). The `npx skills` CLI reads this structure directly from the GitHub repo. To add a new skill, create a directory under `skills/` with a `SKILL.md` inside it. No build step, no config files, no registry.
