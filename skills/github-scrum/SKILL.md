@@ -19,6 +19,23 @@ Reference: [The 2020 Scrum Guide](https://scrumguides.org/scrum-guide.html).
 
 For a full command reference, see [references/tooling.md](references/tooling.md).
 
+### Cross-platform Date Generation
+
+When generating ISO 8601 dates for milestone `due_on` fields, use a portable snippet — `date -d` is GNU/Linux only and fails on macOS:
+
+```sh
+# Portable (Linux + macOS) — recommended
+DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
+
+# Linux/GNU only
+DUE_DATE=$(date -u -d "+14 days" +%Y-%m-%dT00:00:00Z)
+
+# macOS/BSD only
+DUE_DATE=$(date -u -v+14d +%Y-%m-%dT00:00:00Z)
+```
+
+Always use the Python one-liner when the target platform is unknown. Adjust `days=14` to match the sprint length.
+
 ---
 
 ## Scrum → GitHub Mapping
@@ -121,10 +138,13 @@ GH_PAGER=cat gh issue create \
 ### 4. Create the First Sprint
 
 ```sh
+# Generate due date (portable — works on Linux and macOS)
+DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
+
 GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
   --field title="Sprint 1" \
   --field description="Sprint Goal: <what makes this sprint valuable>" \
-  --field due_on="<ISO 8601 date>"
+  --field due_on="$DUE_DATE"
 ```
 
 Assign issues to the milestone:
@@ -170,11 +190,14 @@ mkdir -p .github/ISSUE_TEMPLATE .github/workflows
    # Get next sprint number
    SPRINT_NUM=$(GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --jq 'length + 1')
 
+   # Generate due date (portable — works on Linux and macOS)
+   DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
+
    # Create milestone
    GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
      --field title="Sprint ${SPRINT_NUM}" \
      --field description="Sprint Goal: <goal>" \
-     --field due_on="<due date ISO 8601>"
+     --field due_on="$DUE_DATE"
 
    # Assign issues
    GH_PAGER=cat gh issue edit <number> --milestone "Sprint ${SPRINT_NUM}"

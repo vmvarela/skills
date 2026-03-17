@@ -91,6 +91,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         skill: ${{ fromJson(needs.detect-skills.outputs.skills) }}
         eval_id: [0, 1, 2]
