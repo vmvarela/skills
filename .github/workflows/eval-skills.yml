@@ -32,7 +32,7 @@ jobs:
       has_skills: ${{ steps.detect.outputs.has_skills }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -96,10 +96,10 @@ jobs:
         eval_id: [0, 1, 2]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -147,7 +147,7 @@ jobs:
 
       - name: Generate response (ai-inference)
         id: generate
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@v2
         with:
           system-prompt-file: /tmp/skill_content.txt
           prompt-file: /tmp/eval_prompt.txt
@@ -230,7 +230,7 @@ jobs:
 
       - name: LLM grade pending assertions (ai-inference)
         id: ai_grade
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@v2
         with:
           system-prompt: |
             You are a strict, objective evaluator. Given a response and a list of assertions,
@@ -307,7 +307,7 @@ jobs:
           "
 
       - name: Upload grading artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "grading-${{ matrix.skill }}-eval${{ matrix.eval_id }}"
           path: /tmp/grading-final.json
@@ -328,15 +328,15 @@ jobs:
         skill: ${{ fromJson(needs.detect-skills.outputs.skills) }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Download eval-0 grading
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: "grading-${{ matrix.skill }}-eval0"
           path: /tmp/consolidated/${{ matrix.skill }}
@@ -345,7 +345,7 @@ jobs:
         run: mv /tmp/consolidated/${{ matrix.skill }}/grading-final.json /tmp/consolidated/${{ matrix.skill }}/eval-0.json
 
       - name: Download eval-1 grading
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: "grading-${{ matrix.skill }}-eval1"
           path: /tmp/dl/eval1
@@ -354,7 +354,7 @@ jobs:
         run: mv /tmp/dl/eval1/grading-final.json /tmp/consolidated/${{ matrix.skill }}/eval-1.json
 
       - name: Download eval-2 grading
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: "grading-${{ matrix.skill }}-eval2"
           path: /tmp/dl/eval2
@@ -385,7 +385,7 @@ jobs:
             --delta-threshold "${{ inputs.delta_threshold || '5' }}"
 
       - name: Upload summary artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "summary-${{ matrix.skill }}"
           path: /tmp/summary-${{ matrix.skill }}.json
@@ -402,7 +402,7 @@ jobs:
 
     steps:
       - name: Download all summaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: "summary-*"
           path: /tmp/summaries
@@ -472,7 +472,7 @@ jobs:
 
       - name: Post or update PR comment
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
@@ -509,7 +509,7 @@ jobs:
       - name: Check for bypass label
         id: bypass
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const labels = context.payload.pull_request.labels.map(l => l.name);
