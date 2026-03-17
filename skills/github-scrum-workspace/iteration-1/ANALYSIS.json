@@ -1,0 +1,67 @@
+{
+  "bugs_found": [
+    {
+      "location": "eval-0-init-project",
+      "severity": "HIGH",
+      "bug": "Using 'date -u -d' (GNU/Linux syntax) in example; macOS uses 'date -u -v+14d'",
+      "fix": "Use cross-platform date syntax or document both",
+      "command": "date -u -d \"+14 days\""
+    },
+    {
+      "location": "eval-2-close-sprint",
+      "severity": "HIGH",
+      "bug": "Using 'date -u -d' (GNU/Linux syntax) in example; macOS uses 'date -u -v+14d'",
+      "fix": "Use cross-platform date syntax or document both",
+      "command": "date -u -d \"+14 days\""
+    }
+  ],
+  "gaps_found": [
+    {
+      "location": "SKILL.md",
+      "gap": "No guidance on: Handling label naming conflicts or duplicates",
+      "impact": "Users must figure this out independently",
+      "recommended_addition": "Add section documenting Handling label naming conflicts or duplicates"
+    },
+    {
+      "location": "SKILL.md",
+      "gap": "No guidance on: PR merge strategies (squash vs rebase)",
+      "impact": "Users must figure this out independently",
+      "recommended_addition": "Add section documenting PR merge strategies (squash vs rebase)"
+    },
+    {
+      "location": "SKILL.md",
+      "gap": "No guidance on: Rolling back a closed sprint or released version",
+      "impact": "Users must figure this out independently",
+      "recommended_addition": "Add section documenting Rolling back a closed sprint or released version"
+    }
+  ],
+  "validation_summary": {
+    "eval-0-init-project": {
+      "uses_GH_PAGER": true,
+      "creates_labels_with_descriptions": true,
+      "uses_gh_api_for_milestone": true,
+      "handles_carryover_properly": false,
+      "uses_gh_release_create": false,
+      "includes_status_labels": true,
+      "four_namespaces": true
+    },
+    "eval-1-mid-sprint": {
+      "uses_GH_PAGER": true,
+      "creates_labels_with_descriptions": false,
+      "uses_gh_api_for_milestone": false,
+      "handles_carryover_properly": true,
+      "uses_gh_release_create": false,
+      "includes_status_labels": true,
+      "four_namespaces": true
+    },
+    "eval-2-close-sprint": {
+      "uses_GH_PAGER": true,
+      "creates_labels_with_descriptions": false,
+      "uses_gh_api_for_milestone": true,
+      "handles_carryover_properly": true,
+      "uses_gh_release_create": true,
+      "includes_status_labels": true,
+      "four_namespaces": false
+    }
+  }
+}

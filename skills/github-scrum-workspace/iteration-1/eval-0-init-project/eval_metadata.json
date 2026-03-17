@@ -1,0 +1,31 @@
+{
+  "eval_id": 0,
+  "name": "Initialize Scrum Project",
+  "prompt": "I'm starting a new project called 'auth-service' on GitHub. Set it up for Scrum: create all the labels (type, priority, size, status namespaces), create Sprint 1 milestone ending in 2 weeks, and create the first sprint planning issue. The repo is mycompany/auth-service.",
+  "assertions": [
+    {
+      "id": "creates-type-labels",
+      "text": "Creates type:* labels (type:feature, type:bug, type:chore, etc.) using gh label create"
+    },
+    {
+      "id": "creates-priority-labels",
+      "text": "Creates priority:* labels (priority:critical, priority:high, etc.)"
+    },
+    {
+      "id": "creates-size-labels",
+      "text": "Creates size:* labels (size:xs, size:s, size:m, size:l, size:xl)"
+    },
+    {
+      "id": "creates-sprint-milestone",
+      "text": "Creates Sprint 1 milestone with a due date using gh api or gh milestone"
+    },
+    {
+      "id": "gh-cli-commands-correct",
+      "text": "All gh commands shown are syntactically valid (no made-up flags)"
+    },
+    {
+      "id": "no-missing-label-namespaces",
+      "text": "Covers all 4 namespaces: type, priority, size, status"
+    }
+  ]
+}

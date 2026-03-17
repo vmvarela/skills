@@ -1,0 +1,31 @@
+{
+  "eval_id": 0,
+  "name": "README from scratch",
+  "scenario": "Write a README for CLI tool 'snapenv' (Go tool for snapshotting env vars)",
+  "assertions": [
+    {
+      "id": "no-welcome-fluff",
+      "text": "Does NOT start with 'Welcome to' or similar filler phrases"
+    },
+    {
+      "id": "shows-real-commands",
+      "text": "Shows actual CLI commands (snapenv save, snapenv load, snapenv list) with examples"
+    },
+    {
+      "id": "explains-what-it-does-upfront",
+      "text": "First paragraph/sentence explains what the tool does concisely"
+    },
+    {
+      "id": "no-empty-sections",
+      "text": "Does not include empty or placeholder sections (e.g., '## Contributing\\nTBD')"
+    },
+    {
+      "id": "installation-included",
+      "text": "Includes how to install the tool"
+    },
+    {
+      "id": "under-100-lines",
+      "text": "README is under 100 lines (pragmatic = brief)"
+    }
+  ]
+}

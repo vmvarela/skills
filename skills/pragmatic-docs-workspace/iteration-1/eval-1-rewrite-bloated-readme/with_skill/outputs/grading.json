@@ -1,0 +1,39 @@
+{
+  "eval_id": 1,
+  "run": "with_skill",
+  "assertions": [
+    {
+      "id": "removes-welcome-intro",
+      "passed": true,
+      "note": "No 'Welcome to DataPipe!' — starts with '# DataPipe' then immediate one-line description."
+    },
+    {
+      "id": "removes-empty-features-list",
+      "passed": true,
+      "note": "Replaced vague 'Easy to use, Highly configurable' list with a concrete 'When to Use DataPipe' section with real use cases and honest alternatives."
+    },
+    {
+      "id": "keeps-installation-steps",
+      "passed": true,
+      "note": "'pip install datapipe' preserved. Adds 'Requires Python 3.8+'."
+    },
+    {
+      "id": "adds-real-usage-example",
+      "passed": true,
+      "note": "Full Pipeline example with source, transform, output, and run() — concrete and runnable."
+    },
+    {
+      "id": "shorter-than-original",
+      "passed": true,
+      "note": "55 lines vs original ~60 lines."
+    },
+    {
+      "id": "honest-about-gaps",
+      "passed": true,
+      "note": "Explicit Limitations section: single-machine, <1GB data, limited connectors. Also honest about alternatives (Airflow, dbt, Spark)."
+    }
+  ],
+  "pass_count": 6,
+  "total": 6,
+  "pass_rate": 1.0
+}

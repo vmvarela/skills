@@ -1,0 +1,176 @@
+{
+  "metadata": {
+    "skill_name": "pragmatic-docs",
+    "timestamp": "2026-03-17T00:00:00Z",
+    "evals_run": [0, 1, 2],
+    "evals": {
+      "0": "README from scratch (snapenv CLI tool)",
+      "1": "Rewrite bloated README (DataPipe)",
+      "2": "CONTRIBUTING.md guide (snapenv solo tool)"
+    },
+    "runs_per_configuration": 1,
+    "total_runs": 6,
+    "total_assertions": 17
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "run": "with_skill",
+      "pass_count": 6,
+      "total": 6,
+      "pass_rate": 1.0
+    },
+    {
+      "eval_id": 0,
+      "run": "without_skill",
+      "pass_count": 3,
+      "total": 6,
+      "pass_rate": 0.5
+    },
+    {
+      "eval_id": 1,
+      "run": "with_skill",
+      "pass_count": 6,
+      "total": 6,
+      "pass_rate": 1.0
+    },
+    {
+      "eval_id": 1,
+      "run": "without_skill",
+      "pass_count": 3,
+      "total": 6,
+      "pass_rate": 0.5
+    },
+    {
+      "eval_id": 2,
+      "run": "with_skill",
+      "pass_count": 5,
+      "total": 5,
+      "pass_rate": 1.0
+    },
+    {
+      "eval_id": 2,
+      "run": "without_skill",
+      "pass_count": 2,
+      "total": 5,
+      "pass_rate": 0.4
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "total_passed": 17,
+      "total_assertions": 17
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.467,
+        "stddev": 0.058,
+        "min": 0.4,
+        "max": 0.5
+      },
+      "total_passed": 8,
+      "total_assertions": 17
+    },
+    "delta": {
+      "pass_rate": "+53.3%",
+      "absolute_delta": 0.533,
+      "improvement_factor": 2.125
+    }
+  },
+  "gap_analysis": {
+    "consistent_failures_without_skill": [
+      {
+        "assertion": "no-welcome-fluff",
+        "eval_id": 0,
+        "impact": "Generic openers ('Welcome to X') delay the reader from understanding what the tool does. First impressions matter.",
+        "skill_fix": "SKILL.md rule: 'Never start with Welcome to, Introduction, or About sections. Start with what it does.'"
+      },
+      {
+        "assertion": "explains-what-it-does-upfront",
+        "eval_id": 0,
+        "impact": "Explanation buried in '## What is snapenv?' — user must scroll to understand purpose.",
+        "skill_fix": "SKILL.md: 'First paragraph is the elevator pitch. One or two sentences max.'"
+      },
+      {
+        "assertion": "no-empty-sections",
+        "eval_id": 0,
+        "impact": "'## Troubleshooting' with one sentence and '## Related Projects' as a stub signal an incomplete doc and waste reader time.",
+        "skill_fix": "SKILL.md: 'Never include a section you cannot fill with real content right now.'"
+      },
+      {
+        "assertion": "removes-empty-features-list",
+        "eval_id": 1,
+        "impact": "Vague feature lists ('Easy to use, Production ready') convey no information and erode trust in the documentation.",
+        "skill_fix": "SKILL.md: 'Replace feature bullet lists with concrete examples. Show, don't tell.'"
+      },
+      {
+        "assertion": "shorter-than-original",
+        "eval_id": 1,
+        "impact": "A rewrite that adds length without adding value has failed its purpose. Without-skill response grew from 60 to 65 lines.",
+        "skill_fix": "SKILL.md: 'If in doubt, cut. Shorter is almost always better. Every line must earn its place.'"
+      },
+      {
+        "assertion": "honest-about-gaps",
+        "eval_id": 1,
+        "impact": "No limitations section leaves users to discover constraints at runtime. Dishonest by omission.",
+        "skill_fix": "SKILL.md: 'Document what the tool cannot do. Limitations sections build trust.'"
+      },
+      {
+        "assertion": "under-60-lines",
+        "eval_id": 2,
+        "impact": "CONTRIBUTING.md at 66 lines for a solo tool is overengineered and discourages contributors.",
+        "skill_fix": "SKILL.md: 'CONTRIBUTING.md for small projects should be 30-60 lines. Solo maintainer = fewer process steps.'"
+      },
+      {
+        "assertion": "no-code-of-conduct-boilerplate",
+        "eval_id": 2,
+        "impact": "'Our community follows a Code of Conduct' boilerplate on a solo CLI tool signals copy-paste docs, not genuine community guidelines.",
+        "skill_fix": "SKILL.md: 'Skip CoC boilerplate unless you actually have a community. For solo tools, one sentence on tone suffices.'"
+      },
+      {
+        "assertion": "practical-not-corporate",
+        "eval_id": 2,
+        "impact": "Corporate tone ('We welcome contributions from the community!') feels impersonal for a one-person Go tool and signals auto-generated docs.",
+        "skill_fix": "SKILL.md: 'Write like a human. Use first person. Skip the royal 'we' on solo projects.'"
+      }
+    ],
+    "skill_strengths": [
+      "WITH_SKILL achieves 100% pass rate (17/17) across all three evals",
+      "WITH_SKILL consistently avoids welcome/intro fluff in all scenarios",
+      "WITH_SKILL produces honest Limitations sections (Eval 1: single-machine, <1GB data)",
+      "WITH_SKILL calibrates tone to context: solo tool = direct, personal, no corporate boilerplate",
+      "WITH_SKILL line counts stay well under limits (60 lines README, 46 lines CONTRIBUTING)",
+      "WITH_SKILL rewrites actually shorten content while adding quality (55 lines vs 65 for rewrite)"
+    ],
+    "without_skill_weaknesses": [
+      "Average 46.7% pass rate (8/17 assertions) — consistent failure on style/tone assertions",
+      "Without-skill defaults to 'corporate template' documentation: Welcome opener, feature lists, CoC boilerplate",
+      "Without-skill does produce working content (installation, commands, PR steps) — technical facts are correct",
+      "Without-skill fails on: brevity, honest limitations, tone calibration, and removing filler",
+      "The gap is not about knowledge — it's about judgment: knowing WHAT to omit is the skill"
+    ],
+    "key_insight": "The skill teaches a documentation philosophy: documentation exists to serve the reader, not the author. WITH_SKILL responses show this — they cut filler, lead with value, and calibrate length and tone to the actual project context. WITHOUT_SKILL defaults to a corporate template that wastes reader time regardless of the project's actual nature.",
+    "improvement_areas_for_skill": [
+      "Could add explicit examples of bad vs good openings (Welcome to X → tool does Y in one sentence)",
+      "Could strengthen guidance on calibrating doc length to project scale (solo vs team vs enterprise)",
+      "Could add a checklist: 'Before publishing, remove any section that says TBD, TODO, or has fewer than 3 real sentences'",
+      "SKILL.md is already concise (227 lines) — no major structural changes needed"
+    ],
+    "bugs_found": []
+  },
+  "notes": [
+    "ANALYST: pragmatic-docs skill achieves 100% pass rate (17/17) vs 46.7% without skill — a +53.3pp improvement.",
+    "ANALYST: No bugs found in the skill. All instructions are correct and produce the right behavior.",
+    "ANALYST: The skill's value is in teaching judgment about what to omit. Technical content (commands, installation, PR steps) is correct in both configurations.",
+    "ANALYST: The largest gap is in Eval 2 (CONTRIBUTING.md): without-skill scores 40% due to CoC boilerplate, corporate tone, and length. With-skill scores 100% by calibrating to the solo maintainer context.",
+    "ANALYST: Eval 0 and 1 each show 50% without-skill (3/6 assertions) — without-skill gets facts right but fails on style, brevity, and presentation.",
+    "ANALYST: Improvement suggestion: add an explicit 'anti-pattern' table to SKILL.md — a before/after showing exactly which phrases to eliminate. Currently the guidance is implicit.",
+    "ANALYST: The skill is production-ready. Recommend closing issue #33 with status: complete, no fixes required."
+  ]
+}

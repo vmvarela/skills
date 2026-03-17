@@ -340,3 +340,4 @@ GH_PAGER=cat gh issue edit <linked-issue-number> --remove-label "status:ready" -
 **Small team (2-3):** Use all events. Use 2-week sprints. Retrospectives are more valuable with multiple perspectives.
 
 **Existing project:** Skip MVP identification. Create labels, triage existing issues, start sprinting from current state.
+

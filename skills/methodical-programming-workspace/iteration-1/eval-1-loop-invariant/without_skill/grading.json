@@ -1,0 +1,36 @@
+{
+  "eval_id": 1,
+  "run": "without_skill",
+  "expectations": [
+    {
+      "id": "states-loop-invariant",
+      "text": "Explicitly states the loop invariant as a logical predicate",
+      "passed": false,
+      "evidence": "No explicit loop invariant stated. Code comments mention 'Move pivot to end' and 'partition logic' but no formal predicate like 'I: ∀x ∈ [lo,i)...' or similar. Missing mathematical notation."
+    },
+    {
+      "id": "proves-invariant-maintained",
+      "text": "Shows that the loop body maintains the invariant",
+      "passed": false,
+      "evidence": "No proof provided. Section 'How it works' gives informal intuition ('maintains pointer i') but no case analysis, no formal show that loop body preserves any invariant property."
+    },
+    {
+      "id": "proves-termination",
+      "text": "Provides a bounding function (variant) that decreases on each iteration",
+      "passed": false,
+      "evidence": "No bounding function defined. Complexity section mentions 'O(n)' but this is asymptotic analysis, not a formal termination argument with decreasing measure. No proof that loop terminates."
+    },
+    {
+      "id": "implementation-correct",
+      "text": "The partition function is correct and would work in quicksort",
+      "passed": true,
+      "evidence": "Implementation is functionally correct Lomuto partition. Code places smaller elements on left, larger on right. Works correctly in quicksort. Tests confirm correctness of behavior."
+    },
+    {
+      "id": "language-is-python",
+      "text": "Implementation is in Python as requested",
+      "passed": true,
+      "evidence": "Implementation and all code examples are in Python 3: uses for-loop, if/else, list operations, standard partition pattern."
+    }
+  ]
+}

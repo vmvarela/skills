@@ -1,0 +1,27 @@
+{
+  "eval_id": 1,
+  "name": "Mid-Sprint Issue Management",
+  "prompt": "It's mid-sprint and two things happened: (1) an urgent production bug came in — I need to add it to the current sprint without killing our sprint goal, and (2) ticket AUTH-42 has been blocked for 2 days, blocked by AUTH-38 which was just deployed. Show me how to handle both situations in the AUTH project, sprint milestone 'Sprint 3'.",
+  "assertions": [
+    {
+      "id": "urgent-ticket-created-or-added",
+      "text": "Shows how to create the urgent bug ticket and/or add it to the sprint milestone"
+    },
+    {
+      "id": "sprint-goal-risk-addressed",
+      "text": "Mentions checking sprint capacity or removing a lower-priority ticket to compensate"
+    },
+    {
+      "id": "blocker-removed-correctly",
+      "text": "Shows how to remove the blocker (unlink or update the blocked ticket status)"
+    },
+    {
+      "id": "uses-gh-cli-not-ui",
+      "text": "Uses gh CLI commands, not instructions to use the GitHub UI"
+    },
+    {
+      "id": "status-label-guidance",
+      "text": "References status labels (status:blocked, status:in-progress, etc.)"
+    }
+  ]
+}

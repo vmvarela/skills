@@ -1,0 +1,39 @@
+{
+  "eval_id": 0,
+  "run": "without_skill",
+  "assertions": [
+    {
+      "id": "no-welcome-fluff",
+      "passed": false,
+      "note": "Starts with 'Welcome to snapenv, a Go CLI tool for snapshotting and restoring environment variable sets.' — classic filler opening."
+    },
+    {
+      "id": "shows-real-commands",
+      "passed": true,
+      "note": "Shows snapenv save, snapenv load, snapenv list with bash code blocks."
+    },
+    {
+      "id": "explains-what-it-does-upfront",
+      "passed": false,
+      "note": "First line is 'Welcome to snapenv'. Actual explanation is buried in '## What is snapenv?' section further down."
+    },
+    {
+      "id": "no-empty-sections",
+      "passed": false,
+      "note": "'## Troubleshooting' only says 'For issues or questions, please open an issue on GitHub.' — no real troubleshooting content. '## Related Projects' is a one-liner stub."
+    },
+    {
+      "id": "installation-included",
+      "passed": true,
+      "note": "Multiple installation paths provided (clone+build, go install)."
+    },
+    {
+      "id": "under-100-lines",
+      "passed": true,
+      "note": "99 lines — just under the limit, but padded with empty sections."
+    }
+  ],
+  "pass_count": 3,
+  "total": 6,
+  "pass_rate": 0.5
+}

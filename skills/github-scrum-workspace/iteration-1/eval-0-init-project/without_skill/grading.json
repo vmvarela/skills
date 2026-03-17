@@ -1,0 +1,36 @@
+{
+  "eval_id": 0,
+  "run": "without_skill",
+  "expectations": [
+    {
+      "text": "Creates type:* labels (type:feature, type:bug, type:chore, etc.) using gh label create",
+      "passed": false,
+      "evidence": "ls and add:\n   - type labels: feature, bug, chore, spike, docs\n   - priority labels: criti"
+    },
+    {
+      "text": "Creates priority:* labels (priority:critical, priority:high, etc.)",
+      "passed": false,
+      "evidence": "e, docs\n   - priority labels: critical, high, medium, low  \n   - size labels: xs, s, m, l,"
+    },
+    {
+      "text": "Creates size:* labels (size:xs, size:s, size:m, size:l, size:xl)",
+      "passed": false,
+      "evidence": "dium, low  \n   - size labels: xs, s, m, l, xl\n   - status labels: ready, in-progress, bloc"
+    },
+    {
+      "text": "Creates Sprint 1 milestone with a due date using gh api or gh milestone",
+      "passed": false,
+      "evidence": "ew\n\n2. Create a milestone for Sprint 1:\n   - Go to Issues > Milestones\n   - Click \"New mil"
+    },
+    {
+      "text": "All gh commands shown are syntactically valid (no made-up flags)",
+      "passed": false,
+      "evidence": "Keyword match found"
+    },
+    {
+      "text": "Covers all 4 namespaces: type, priority, size, status",
+      "passed": false,
+      "evidence": "Keyword match found"
+    }
+  ]
+}

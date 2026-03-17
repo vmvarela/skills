@@ -1,0 +1,36 @@
+{
+  "eval_id": 0,
+  "run": "with_skill",
+  "expectations": [
+    {
+      "text": "Creates type:* labels (type:feature, type:bug, type:chore, etc.) using gh label create",
+      "passed": true,
+      "evidence": "bel delete {} --yes\n\n# Create type: namespace\ngh label create \"type:feature\"       --color"
+    },
+    {
+      "text": "Creates priority:* labels (priority:critical, priority:high, etc.)",
+      "passed": true,
+      "evidence": "Documentation only\"\n\n# Create priority: namespace\ngh label create \"priority:critical\"  --c"
+    },
+    {
+      "text": "Creates size:* labels (size:xs, size:s, size:m, size:l, size:xl)",
+      "passed": true,
+      "evidence": ", do when possible\"\n\n# Create size: namespace\ngh label create \"size:xs\"            --color"
+    },
+    {
+      "text": "Creates Sprint 1 milestone with a due date using gh api or gh milestone",
+      "passed": true,
+      "evidence": "issue\"\n```\n\n## Step 2: Create Sprint 1 milestone\n\nCalculate due date (2 weeks from today):"
+    },
+    {
+      "text": "All gh commands shown are syntactically valid (no made-up flags)",
+      "passed": true,
+      "evidence": "=cat\n\n# Remove default labels\ngh label list --json name -q '.[].name' | xargs -I {} gh lab"
+    },
+    {
+      "text": "Covers all 4 namespaces: type, priority, size, status",
+      "passed": true,
+      "evidence": "bel delete {} --yes\n\n# Create type: namespace\ngh label create \"type:feature\"       --color"
+    }
+  ]
+}

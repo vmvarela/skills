@@ -1,0 +1,31 @@
+{
+  "eval_id": 1,
+  "run": "with_skill",
+  "expectations": [
+    {
+      "text": "Shows how to create the urgent bug ticket and/or add it to the sprint milestone",
+      "passed": true,
+      "evidence": "t\n\n```sh\nexport GH_PAGER=cat\n\ngh issue create \\\n  --title \"[URGENT] Production bug in paym"
+    },
+    {
+      "text": "Mentions checking sprint capacity or removing a lower-priority ticket to compensate",
+      "passed": true,
+      "evidence": "`\n\n### Step 3: Address sprint capacity\n\nSince we're adding unplanned work, review current"
+    },
+    {
+      "text": "Shows how to remove the blocker (unlink or update the blocked ticket status)",
+      "passed": true,
+      "evidence": "t AUTH-42 \\\n  --remove-label \"status:blocked\" \\\n  --add-label \"status:ready\" \\\n  --repo my"
+    },
+    {
+      "text": "Uses gh CLI commands, not instructions to use the GitHub UI",
+      "passed": true,
+      "evidence": "t\n\n```sh\nexport GH_PAGER=cat\n\ngh issue create \\\n  --title \"[URGENT] Production bug in paym"
+    },
+    {
+      "text": "References status labels (status:blocked, status:in-progress, etc.)",
+      "passed": true,
+      "evidence": "t AUTH-42 \\\n  --remove-label \"status:blocked\" \\\n  --add-label \"status:ready\" \\\n  --repo my"
+    }
+  ]
+}

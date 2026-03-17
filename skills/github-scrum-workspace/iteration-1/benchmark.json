@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "skill_name": "github-scrum",
+    "timestamp": "2026-03-17T18:05:45.058277",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "run": "with_skill",
+      "pass_count": 6,
+      "total": 6,
+      "pass_rate": 100.0
+    },
+    {
+      "eval_id": 0,
+      "run": "without_skill",
+      "pass_count": 0,
+      "total": 6,
+      "pass_rate": 0.0
+    },
+    {
+      "eval_id": 1,
+      "run": "with_skill",
+      "pass_count": 5,
+      "total": 5,
+      "pass_rate": 100.0
+    },
+    {
+      "eval_id": 1,
+      "run": "without_skill",
+      "pass_count": 0,
+      "total": 5,
+      "pass_rate": 0.0
+    },
+    {
+      "eval_id": 2,
+      "run": "with_skill",
+      "pass_count": 6,
+      "total": 6,
+      "pass_rate": 100.0
+    },
+    {
+      "eval_id": 2,
+      "run": "without_skill",
+      "pass_count": 3,
+      "total": 6,
+      "pass_rate": 50.0
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 100.0,
+        "stddev": 0.0,
+        "min": 100.0,
+        "max": 100.0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 16.67,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 50.0
+      }
+    },
+    "delta": {
+      "pass_rate": "+83.33"
+    }
+  },
+  "notes": [
+    "ANALYST: With-skill responses consistently demonstrate gh CLI mastery, including GH_PAGER=cat environmental variable setup, proper command syntax, and comprehensive label namespace coverage.",
+    "ANALYST: Without-skill responses lack gh CLI-specific syntax and incorrectly refer to UI-based workflows instead of CLI automation.",
+    "ANALYST: Eval 0 (initialization) shows largest gap: with-skill provides complete label creation commands; without-skill suggests manual UI setup.",
+    "ANALYST: Eval 1 (mid-sprint) reveals missing capacity planning details in without-skill; with-skill includes sprint load analysis.",
+    "ANALYST: Eval 2 (sprint closure) demonstrates strong skill advantage in release creation syntax and carryover handling via gh API.",
+    "ANALYST: No factual bugs found in skill; all gh commands are syntactically valid per GitHub CLI documentation.",
+    "ANALYST: Gap identified: Skill could benefit from error handling examples (e.g., handling 'milestone not found' scenarios).",
+    "ANALYST: Gap identified: Skill assumes familiarity with jq for JSON parsing; beginners may need additional guidance."
+  ]
+}

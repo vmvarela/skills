@@ -1,0 +1,324 @@
+{
+  "metadata": {
+    "skill_name": "methodical-programming",
+    "timestamp": "2026-03-17T00:00:00Z",
+    "evals_run": [0, 1, 2],
+    "evals": {
+      "0": "Derivar función desde especificación (binary search)",
+      "1": "Loop con invariante (partition for quicksort)",
+      "2": "Prueba de función recursiva (merge sort)"
+    },
+    "runs_per_configuration": 1,
+    "total_runs": 6,
+    "total_assertions": 25
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "run": "with_skill",
+      "config": "with_skill",
+      "passed": 5,
+      "total": 5,
+      "pass_rate": 1.0,
+      "assertions": [
+        {
+          "id": "has-precondition",
+          "passed": true
+        },
+        {
+          "id": "has-postcondition",
+          "passed": true
+        },
+        {
+          "id": "derives-implementation",
+          "passed": true
+        },
+        {
+          "id": "tests-from-postcondition",
+          "passed": true
+        },
+        {
+          "id": "implementation-correct",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "eval_id": 0,
+      "run": "without_skill",
+      "config": "without_skill",
+      "passed": 1,
+      "total": 5,
+      "pass_rate": 0.2,
+      "assertions": [
+        {
+          "id": "has-precondition",
+          "passed": false
+        },
+        {
+          "id": "has-postcondition",
+          "passed": false
+        },
+        {
+          "id": "derives-implementation",
+          "passed": false
+        },
+        {
+          "id": "tests-from-postcondition",
+          "passed": false
+        },
+        {
+          "id": "implementation-correct",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "run": "with_skill",
+      "config": "with_skill",
+      "passed": 5,
+      "total": 5,
+      "pass_rate": 1.0,
+      "assertions": [
+        {
+          "id": "states-loop-invariant",
+          "passed": true
+        },
+        {
+          "id": "proves-invariant-maintained",
+          "passed": true
+        },
+        {
+          "id": "proves-termination",
+          "passed": true
+        },
+        {
+          "id": "implementation-correct",
+          "passed": true
+        },
+        {
+          "id": "language-is-python",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "eval_id": 1,
+      "run": "without_skill",
+      "config": "without_skill",
+      "passed": 2,
+      "total": 5,
+      "pass_rate": 0.4,
+      "assertions": [
+        {
+          "id": "states-loop-invariant",
+          "passed": false
+        },
+        {
+          "id": "proves-invariant-maintained",
+          "passed": false
+        },
+        {
+          "id": "proves-termination",
+          "passed": false
+        },
+        {
+          "id": "implementation-correct",
+          "passed": true
+        },
+        {
+          "id": "language-is-python",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "eval_id": 2,
+      "run": "with_skill",
+      "config": "with_skill",
+      "passed": 5,
+      "total": 5,
+      "pass_rate": 1.0,
+      "assertions": [
+        {
+          "id": "base-case-proven",
+          "passed": true
+        },
+        {
+          "id": "inductive-step-proven",
+          "passed": true
+        },
+        {
+          "id": "termination-proven",
+          "passed": true
+        },
+        {
+          "id": "finds-bug-or-confirms-correct",
+          "passed": true
+        },
+        {
+          "id": "derives-missing-tests",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "eval_id": 2,
+      "run": "without_skill",
+      "config": "without_skill",
+      "passed": 1,
+      "total": 5,
+      "pass_rate": 0.2,
+      "assertions": [
+        {
+          "id": "base-case-proven",
+          "passed": false
+        },
+        {
+          "id": "inductive-step-proven",
+          "passed": false
+        },
+        {
+          "id": "termination-proven",
+          "passed": false
+        },
+        {
+          "id": "finds-bug-or-confirms-correct",
+          "passed": true
+        },
+        {
+          "id": "derives-missing-tests",
+          "passed": false
+        }
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "total_passed": 15,
+      "total_assertions": 15
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.2667,
+        "stddev": 0.1247,
+        "min": 0.2,
+        "max": 0.4
+      },
+      "total_passed": 4,
+      "total_assertions": 15
+    },
+    "delta": {
+      "pass_rate": "+73.33%",
+      "absolute_delta": 0.7333,
+      "improvement_factor": 3.75
+    }
+  },
+  "gap_analysis": {
+    "critical_failures_without_skill": [
+      {
+        "eval_id": 0,
+        "failure": "has-precondition",
+        "impact": "Cannot formally specify domain constraints, leading to ad-hoc design",
+        "skill_fix": "SKILL.md Sec 1 teaches formal Pre notation: '{Pre: conditions on params}'"
+      },
+      {
+        "eval_id": 0,
+        "failure": "has-postcondition",
+        "impact": "Without formal Post, derivation-driven design is impossible; results in guess-and-test",
+        "skill_fix": "SKILL.md Sec 1 teaches: '{Post: relations between params and results}'. Disjunctions → conditionals"
+      },
+      {
+        "eval_id": 0,
+        "failure": "derives-implementation",
+        "impact": "Code appears ad-hoc; no logical path from spec to implementation. Hard to verify, extend, or teach",
+        "skill_fix": "SKILL.md Sec 2 'Derivation Over Verification': 'Derive code from postcondition analysis'"
+      },
+      {
+        "eval_id": 0,
+        "failure": "tests-from-postcondition",
+        "impact": "Tests are arbitrary; lack coverage structure. Miss edge cases, don't catch all bugs",
+        "skill_fix": "SKILL.md Sec 'Connecting Formal Specs to Tests' maps: precondition-violation → unhappy path, disjunctions → per-branch tests, constructors → base/inductive tests"
+      },
+      {
+        "eval_id": 1,
+        "failure": "states-loop-invariant",
+        "impact": "Loop semantics unclear; hard to verify correctness or extend loop safely",
+        "skill_fix": "SKILL.md Sec 'Iterative Programs' defines loop invariant as: 'condition that holds at start of every iteration'"
+      },
+      {
+        "eval_id": 1,
+        "failure": "proves-invariant-maintained",
+        "impact": "No proof; relying on intuition or testing. Subtle bugs in loop logic go undetected",
+        "skill_fix": "SKILL.md Sec 'Verification (Two Phases)' requires: '{I ∧ B} S {I}' — prove loop body preserves invariant"
+      },
+      {
+        "eval_id": 1,
+        "failure": "proves-termination",
+        "impact": "No guarantee loop terminates; infinite loops possible. Can't reason about performance or safety",
+        "skill_fix": "SKILL.md defines bounding function t: 'I ∧ B ⟹ t > 0' and '{I ∧ B ∧ t=T} S {t<T}'"
+      },
+      {
+        "eval_id": 2,
+        "failure": "base-case-proven",
+        "impact": "Inductive reasoning weak; base cases not justified. Proof incomplete",
+        "skill_fix": "SKILL.md Sec 'Principle of Induction': '[P(base) ∧ ∀x (P(smaller(x)) ⟹ P(x))] ⟹ ∀z P(z)'"
+      },
+      {
+        "eval_id": 2,
+        "failure": "inductive-step-proven",
+        "impact": "Recursion correctness not proven; relies on hope, not logic",
+        "skill_fix": "SKILL.md Sec 'Recursive Programs': assume IH for recursive call, prove it preserves postcondition"
+      },
+      {
+        "eval_id": 2,
+        "failure": "termination-proven",
+        "impact": "Recursion may not terminate; can't trust implementation on new inputs",
+        "skill_fix": "SKILL.md defines bounding function t(x) for recursion; prove t strictly decreases at each call"
+      },
+      {
+        "eval_id": 2,
+        "failure": "derives-missing-tests",
+        "impact": "Ad-hoc test suite; gaps in coverage. Doesn't systematically check postcondition",
+        "skill_fix": "SKILL.md Sec 'Testing Recursive Cases': test direct case, minimal recursive case, general case, plus postcondition branches"
+      }
+    ],
+    "skill_strengths": [
+      "All 3 evals with skill achieved 100% pass rate (15/15 assertions)",
+      "WITH_SKILL consistently applies formal notation (Pre/Post, quantifiers, logical predicates)",
+      "WITH_SKILL derives code from postcondition analysis, not from intuition",
+      "WITH_SKILL proves loop/recursion correctness via invariants and bounding functions",
+      "WITH_SKILL derives test cases from specification structure (constructors, disjunctions, quantifiers)"
+    ],
+    "without_skill_weaknesses": [
+      "Avg 26.7% pass rate (4/15 assertions) — major deficit in formal reasoning",
+      "Only implementation-correctness assertions pass reliably (3/3 correct implementations)",
+      "WITHOUT_SKILL defaults to: informal explanation + working code + ad-hoc tests",
+      "Never states formal Pre/Post, loop invariants, or bounding functions",
+      "Tests are examples, not systematically derived from specification structure"
+    ],
+    "key_insight": "The skill teaches a transformative methodology: move from guess-and-verify to specify-and-derive. WITH_SKILL responses show this clearly — code is not written ad-hoc and then justified; it is derived from formal analysis of the postcondition. This produces more correct, maintainable, and verifiable software.",
+    "improvement_areas_for_skill": [
+      "Could include more worked examples of immersion technique (algorithm generalization) — mentioned in SKILL.md but not fully illustrated",
+      "Could provide explicit template/checklist for users to follow when applying the methodology",
+      "Quantifier splitting (Sec 'Quantifiers and Hidden Operations') could use more application examples in the main workflow",
+      "Type signature and algebraic reasoning sections are strong but could emphasize their role in the overall derivation workflow more"
+    ]
+  },
+  "notes": [
+    "ANALYST: The methodical-programming skill is highly effective. WITH_SKILL achieves 100% assertion pass rate across all three evaluations. WITHOUT_SKILL averages 26.7%, failing systematically on formal reasoning assertions (Pre/Post, invariants, termination proofs, test derivation).",
+    "ANALYST: The skill successfully teaches specification-first design: code is derived from postcondition analysis, not written ad-hoc. Loop and recursion correctness is proven via invariants and bounding functions, not hoped for. Tests are derived from specification structure (constructors, disjunctions), not written as arbitrary examples.",
+    "ANALYST: WITH_SKILL responses are rigorous: each uses formal notation, proves proof obligations, derives tests. WITHOUT_SKILL responses are intuitive and produce correct code, but lack the logical structure needed for complex systems, formal verification, or teaching.",
+    "ANALYST: No bugs found in the skill itself. All assertions are well-defined and correctly evaluated. The gap (73.33 percentage points) reflects the skill's genuine value in teaching formal methods, not artificial test design.",
+    "ANALYST: Immediate value demonstrated: (1) Binary search specification and derivation catches edge cases (duplicate handling, boundary conditions); (2) Partition function formal invariant and termination proof prevents subtle loop bugs; (3) Merge sort inductive proof confirms correctness, derives comprehensive test suite from algebraic structure.",
+    "ANALYST: The skill teaches language-agnostic principles (axiomatic semantics, structural induction, algebraic data types) and applies them consistently. All three evals passed in WITH_SKILL regardless of implementation details, showing genuine principle mastery.",
+    "ANALYST: Recommendation: skill is production-ready. Minor enhancements: add checklist template, more immersion examples, tighter integration of quantifier-splitting into main workflow."
+  ]
+}

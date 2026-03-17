@@ -9,34 +9,42 @@
       "assertions": [
         {
           "id": "uses-agile-sprint-endpoint",
+          "type": "static",
           "text": "Uses /rest/agile/1.0/board/{boardId}/sprint to find the active sprint (not fields.sprint or a custom field)"
         },
         {
           "id": "uses-issue-create-api",
+          "type": "static",
           "text": "Creates the issue via POST /rest/api/3/issue with issuetype, priority, and project key in the request body"
         },
         {
           "id": "assigns-to-sprint-correctly",
+          "type": "static",
           "text": "Assigns the issue to the sprint via POST /rest/agile/1.0/sprint/{sprintId}/issue (not by setting a sprint custom field)"
         },
         {
           "id": "priority-field-correct",
+          "type": "llm",
           "text": "Sets priority using the correct JIRA API format: {\"priority\": {\"name\": \"High\"}}"
         },
         {
           "id": "issuetype-field-correct",
+          "type": "llm",
           "text": "Sets issuetype using correct format: {\"issuetype\": {\"name\": \"Bug\"}}"
         },
         {
           "id": "auth-guidance-present",
+          "type": "llm",
           "text": "Includes guidance on authentication (JIRA_TOKEN env var or Authorization header with Basic base64(email:token))"
         },
         {
           "id": "step-sequence-correct",
+          "type": "llm",
           "text": "Steps are in correct order: (1) find sprint ID, (2) create issue, (3) assign to sprint"
         },
         {
           "id": "uses-correct-jira-domain",
+          "type": "llm",
           "text": "Uses the provided site domain mycompany.atlassian.net in the API URLs"
         }
       ]
@@ -49,26 +57,32 @@
       "assertions": [
         {
           "id": "jql-uses-sprint-filter",
+          "type": "llm",
           "text": "JQL query filters by current sprint (e.g., sprint in openSprints() or sprint = 'active sprint name')"
         },
         {
           "id": "jql-uses-blocked-filter",
+          "type": "llm",
           "text": "JQL query filters for blocked issues (e.g., status = Blocked or issueFunction in linkedIssuesOf(...,'is blocked by') or labels = blocked)"
         },
         {
           "id": "fetches-issue-links",
+          "type": "static",
           "text": "Shows how to retrieve issue links from ENG-42 via GET /rest/api/3/issue/ENG-42 (to find the link ID)"
         },
         {
           "id": "deletes-link-correctly",
+          "type": "static",
           "text": "Removes the blocker link via DELETE /rest/api/3/issueLink/{linkId}"
         },
         {
           "id": "no-wrong-link-api",
+          "type": "llm",
           "text": "Does NOT use a non-existent JIRA endpoint to modify links (e.g., does not PUT to /rest/api/3/issue/ENG-42/remotelink for issue links)"
         },
         {
           "id": "auth-guidance-present",
+          "type": "llm",
           "text": "Includes authentication guidance or references the JIRA_TOKEN env var"
         }
       ]
@@ -81,30 +95,37 @@
       "assertions": [
         {
           "id": "moves-issues-via-agile-api",
+          "type": "static",
           "text": "Moves incomplete issues to Sprint 6 via POST /rest/agile/1.0/sprint/{sprint6Id}/issue with an issues array"
         },
         {
           "id": "closes-sprint-via-put",
+          "type": "static",
           "text": "Closes the sprint via PUT /rest/agile/1.0/sprint/{sprintId} with state: 'closed'"
         },
         {
           "id": "releases-version-correctly",
+          "type": "llm",
           "text": "Marks the JIRA version released via PUT /rest/api/3/version/{versionId} with released: true and releaseDate"
         },
         {
           "id": "fixversions-format-correct",
+          "type": "llm",
           "text": "If fixVersions is set on issues, uses correct array-of-objects format: [{\"name\": \"v1.5.0\"}] (not a flat string)"
         },
         {
           "id": "gh-release-create-correct",
+          "type": "static",
           "text": "Creates GitHub release using 'gh release create v1.5.0 --title ... --notes ... --target main' (or --generate-notes)"
         },
         {
           "id": "step-sequence-correct",
+          "type": "llm",
           "text": "Steps in correct order: find incomplete issues, move to Sprint 6, close Sprint 5, release JIRA version, publish GitHub release"
         },
         {
           "id": "jql-for-incomplete-issues",
+          "type": "llm",
           "text": "Uses JQL to find incomplete issues in Sprint 5, e.g., project = ENG AND sprint = 'Sprint 5' AND status != Done"
         }
       ]
