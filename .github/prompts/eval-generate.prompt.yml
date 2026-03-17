@@ -6,7 +6,7 @@ messages:
       {{skill_content}}
   - role: user
     content: "{{eval_prompt}}"
-model: openai/gpt-4o-mini
+model: openai/gpt-4o
 modelParameters:
   temperature: 0
   maxCompletionTokens: 2000

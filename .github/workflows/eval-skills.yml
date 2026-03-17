@@ -18,6 +18,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  models: read
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -150,7 +151,7 @@ jobs:
         with:
           system-prompt-file: /tmp/skill_content.txt
           prompt-file: /tmp/eval_prompt.txt
-          model: openai/gpt-4o-mini
+          model: openai/gpt-4o
           temperature: "0"
           max-tokens: "2000"
 
@@ -239,7 +240,7 @@ jobs:
               {"passed": <boolean>, "reason": "<1-2 sentences>"}
             Be strict. No partial credit.
           prompt-file: /tmp/ai_grade_prompt.txt
-          model: openai/gpt-4o-mini
+          model: openai/gpt-4o
           temperature: "0"
           max-tokens: "1500"
 
