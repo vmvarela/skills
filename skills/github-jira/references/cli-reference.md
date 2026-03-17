@@ -149,6 +149,45 @@ curl -s -X PUT \
 
 ---
 
+## Issue links (blockers)
+
+The `jira` CLI does not manage issue links — use `curl` for all link operations.
+
+```sh
+# List all links on a ticket (to find the link ID)
+curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
+  "${JIRA_BASE_URL}/rest/api/3/issue/<PROJECT_KEY>-123" \
+  | jq '.fields.issuelinks[] | "\(.id): \(.type.name) — \(.inwardIssue.key // .outwardIssue.key)"'
+# → example: "10042: Blocks — ENG-38"
+
+# Create an issue link (e.g., "ENG-42 is blocked by ENG-38")
+curl -s -X POST \
+  -H "Authorization: Basic ${JIRA_AUTH}" \
+  -H "Content-Type: application/json" \
+  "${JIRA_BASE_URL}/rest/api/3/issueLink" \
+  -d '{
+    "type": {"name": "Blocks"},
+    "inwardIssue": {"key": "<PROJECT_KEY>-42"},
+    "outwardIssue": {"key": "<PROJECT_KEY>-38"}
+  }'
+
+# Delete an issue link (removes the blocker relationship)
+curl -s -X DELETE \
+  -H "Authorization: Basic ${JIRA_AUTH}" \
+  "${JIRA_BASE_URL}/rest/api/3/issueLink/<link-id>"
+
+# List available link types
+curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
+  "${JIRA_BASE_URL}/rest/api/3/issueLinkType" \
+  | jq '.issueLinkTypes[] | "\(.name): inward=\(.inward), outward=\(.outward)"'
+```
+
+> **Tip:** When a ticket is "blocked by" another, the correct resolution is to
+> `DELETE /rest/api/3/issueLink/{id}` — not to update a label. Labels (`blocked`)
+> are informational; issue links are the structural relationship.
+
+---
+
 ## State transitions (workflow)
 
 ```sh
@@ -221,8 +260,8 @@ curl -s -X POST \
   "${JIRA_BASE_URL}/rest/agile/1.0/sprint/<sprint-id>/issue" \
   -d '{"issues": ["<PROJECT_KEY>-123", "<PROJECT_KEY>-124"]}'
 
-# curl: complete a sprint
-curl -s -X POST \
+# curl: close a sprint — use PUT with state payload (not POST)
+curl -s -X PUT \
   -H "Authorization: Basic ${JIRA_AUTH}" \
   -H "Content-Type: application/json" \
   "${JIRA_BASE_URL}/rest/agile/1.0/sprint/<sprint-id>" \

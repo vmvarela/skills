@@ -151,7 +151,7 @@ jira issue comment add <PROJECT_KEY>-123 --body "Done in PR #42"
 ### Handle a blocker
 
 ```sh
-# Mark as blocked
+# Mark as blocked (add label + comment)
 jira issue edit <PROJECT_KEY>-123 --label blocked
 
 # bash/zsh (Linux, macOS, WSL):
@@ -162,9 +162,26 @@ jira issue comment add <PROJECT_KEY>-123 \
 # PowerShell (Windows):
 # $TODAY = Get-Date -Format "dd/MM/yyyy"
 # jira issue comment add <PROJECT_KEY>-123 --body "Blocked: need access to the staging environment. Contacted @ops on $TODAY"
+```
 
-# Resolve the blocker — edit the ticket removing the label via curl
-# (jira CLI does not support --remove-label; use curl to update labels field directly)
+**Resolve a blocker (issue link approach)**
+
+When a ticket is blocked by another ticket via a JIRA issue link (the "is blocked by" relationship),
+removing the blocker means deleting that link — not just removing a label.
+
+```sh
+# Step 1: find the link ID
+curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
+  "${JIRA_BASE_URL}/rest/api/3/issue/<PROJECT_KEY>-123" \
+  | jq '.fields.issuelinks[] | "\(.id): \(.type.name) \(.inwardIssue.key // .outwardIssue.key)"'
+# → example output: "10042: Blocks ENG-38"
+
+# Step 2: delete the link
+curl -s -X DELETE \
+  -H "Authorization: Basic ${JIRA_AUTH}" \
+  "${JIRA_BASE_URL}/rest/api/3/issueLink/10042"
+
+# Step 3: remove the label and resume work
 curl -s -X PUT \
   -H "Authorization: Basic ${JIRA_AUTH}" \
   -H "Content-Type: application/json" \
@@ -237,10 +254,10 @@ curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
   "${JIRA_BASE_URL}/rest/agile/1.0/board/<BOARD_ID>/sprint?state=active" \
   | jq '.values[0] | "\(.id): \(.name)"'
 
-        # Close the sprint
+        # Close the sprint — use PUT (not POST) with the sprint ID
         # bash/zsh: uses command substitution to inject current UTC timestamp
         COMPLETE_DATE=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
-        curl -s -X POST \
+        curl -s -X PUT \
           -H "Authorization: Basic ${JIRA_AUTH}" \
           -H "Content-Type: application/json" \
           "${JIRA_BASE_URL}/rest/agile/1.0/sprint/<sprint-id>" \
@@ -248,7 +265,7 @@ curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
 
         # PowerShell equivalent:
         # $completeDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.000Z")
-        # curl ... -d "{\"state\": \"closed\", \"completeDate\": \"$completeDate\"}"
+        # curl -X PUT ... -d "{\"state\": \"closed\", \"completeDate\": \"$completeDate\"}"
 ```
 
 ### Step 5: Publish the GitHub Release
