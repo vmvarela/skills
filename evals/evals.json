@@ -1,0 +1,113 @@
+{
+  "skill_name": "github-jira",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "We found a login bug today in production — users on Safari can't authenticate with SSO. Create a JIRA ticket for it in the ENG project, set it as high priority and a bug, and assign it to the current active sprint. The JIRA site is mycompany.atlassian.net and the board is ENG.",
+      "expected_output": "Step-by-step guidance with correct curl commands to: (1) find the active sprint ID via /rest/agile/1.0/board/{boardId}/sprint?state=active, (2) create the issue via POST /rest/api/3/issue with correct body including issuetype, priority, project key, (3) assign to sprint via POST /rest/agile/1.0/sprint/{sprintId}/issue",
+      "files": [],
+      "assertions": [
+        {
+          "id": "uses-agile-sprint-endpoint",
+          "text": "Uses /rest/agile/1.0/board/{boardId}/sprint to find the active sprint (not fields.sprint or a custom field)"
+        },
+        {
+          "id": "uses-issue-create-api",
+          "text": "Creates the issue via POST /rest/api/3/issue with issuetype, priority, and project key in the request body"
+        },
+        {
+          "id": "assigns-to-sprint-correctly",
+          "text": "Assigns the issue to the sprint via POST /rest/agile/1.0/sprint/{sprintId}/issue (not by setting a sprint custom field)"
+        },
+        {
+          "id": "priority-field-correct",
+          "text": "Sets priority using the correct JIRA API format: {\"priority\": {\"name\": \"High\"}}"
+        },
+        {
+          "id": "issuetype-field-correct",
+          "text": "Sets issuetype using correct format: {\"issuetype\": {\"name\": \"Bug\"}}"
+        },
+        {
+          "id": "auth-guidance-present",
+          "text": "Includes guidance on authentication (JIRA_TOKEN env var or Authorization header with Basic base64(email:token))"
+        },
+        {
+          "id": "step-sequence-correct",
+          "text": "Steps are in correct order: (1) find sprint ID, (2) create issue, (3) assign to sprint"
+        },
+        {
+          "id": "uses-correct-jira-domain",
+          "text": "Uses the provided site domain mycompany.atlassian.net in the API URLs"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Our sprint review is tomorrow and we still have 3 blocked stories. Show me all blocked tickets in the current ENG sprint using JQL, then walk me through removing the blocker on ENG-42 — it's blocked by ENG-38 which was actually merged yesterday. JIRA site: mycompany.atlassian.net.",
+      "expected_output": "Step-by-step guidance with: (1) JQL query using issueFunction or status=Blocked within sprint('ENG','active sprint'), (2) curl command to GET the issue links on ENG-42, (3) curl command to DELETE the blocker link using the correct link ID, (4) optionally transition ENG-42 to In Progress",
+      "files": [],
+      "assertions": [
+        {
+          "id": "jql-uses-sprint-filter",
+          "text": "JQL query filters by current sprint (e.g., sprint in openSprints() or sprint = 'active sprint name')"
+        },
+        {
+          "id": "jql-uses-blocked-filter",
+          "text": "JQL query filters for blocked issues (e.g., status = Blocked or issueFunction in linkedIssuesOf(...,'is blocked by') or labels = blocked)"
+        },
+        {
+          "id": "fetches-issue-links",
+          "text": "Shows how to retrieve issue links from ENG-42 via GET /rest/api/3/issue/ENG-42 (to find the link ID)"
+        },
+        {
+          "id": "deletes-link-correctly",
+          "text": "Removes the blocker link via DELETE /rest/api/3/issueLink/{linkId}"
+        },
+        {
+          "id": "no-wrong-link-api",
+          "text": "Does NOT use a non-existent JIRA endpoint to modify links (e.g., does not PUT to /rest/api/3/issue/ENG-42/remotelink for issue links)"
+        },
+        {
+          "id": "auth-guidance-present",
+          "text": "Includes authentication guidance or references the JIRA_TOKEN env var"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Sprint 5 is ending today. Help me: (1) move all unfinished stories to Sprint 6, (2) close Sprint 5 in JIRA, (3) mark the JIRA version 'v1.5.0' as released, and (4) publish a GitHub release v1.5.0 on the main branch with release notes. Project: ENG, site: mycompany.atlassian.net, repo: mycompany/eng-backend.",
+      "expected_output": "Step-by-step guidance with: (1) JQL to find incomplete issues + curl to move them to Sprint 6 via /rest/agile/1.0/sprint/{id}/issue, (2) curl PUT to /rest/agile/1.0/sprint/{id} with state=closed, (3) curl PUT to /rest/api/3/version/{id} with released=true and releaseDate, (4) gh release create command with correct flags",
+      "files": [],
+      "assertions": [
+        {
+          "id": "moves-issues-via-agile-api",
+          "text": "Moves incomplete issues to Sprint 6 via POST /rest/agile/1.0/sprint/{sprint6Id}/issue with an issues array"
+        },
+        {
+          "id": "closes-sprint-via-put",
+          "text": "Closes the sprint via PUT /rest/agile/1.0/sprint/{sprintId} with state: 'closed'"
+        },
+        {
+          "id": "releases-version-correctly",
+          "text": "Marks the JIRA version released via PUT /rest/api/3/version/{versionId} with released: true and releaseDate"
+        },
+        {
+          "id": "fixversions-format-correct",
+          "text": "If fixVersions is set on issues, uses correct array-of-objects format: [{\"name\": \"v1.5.0\"}] (not a flat string)"
+        },
+        {
+          "id": "gh-release-create-correct",
+          "text": "Creates GitHub release using 'gh release create v1.5.0 --title ... --notes ... --target main' (or --generate-notes)"
+        },
+        {
+          "id": "step-sequence-correct",
+          "text": "Steps in correct order: find incomplete issues, move to Sprint 6, close Sprint 5, release JIRA version, publish GitHub release"
+        },
+        {
+          "id": "jql-for-incomplete-issues",
+          "text": "Uses JQL to find incomplete issues in Sprint 5, e.g., project = ENG AND sprint = 'Sprint 5' AND status != Done"
+        }
+      ]
+    }
+  ]
+}
