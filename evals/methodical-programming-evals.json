@@ -9,22 +9,27 @@
       "assertions": [
         {
           "id": "has-precondition",
+          "type": "llm",
           "text": "States a formal precondition (Pre) for the function — e.g., arr is sorted, arr is a list of comparable elements"
         },
         {
           "id": "has-postcondition",
+          "type": "llm",
           "text": "States a formal postcondition (Post) relating inputs and output — e.g., result = i ↔ arr[i] = target; result = -1 ↔ target ∉ arr"
         },
         {
           "id": "derives-implementation",
+          "type": "llm",
           "text": "Explains how the implementation is derived from the postcondition (not just written ad-hoc)"
         },
         {
           "id": "tests-from-postcondition",
+          "type": "llm",
           "text": "Derives test cases from the postcondition structure (target found, target not found, edge cases from precondition boundaries)"
         },
         {
           "id": "implementation-correct",
+          "type": "llm",
           "text": "The binary search implementation is correct and handles edge cases (empty array, target at boundaries)"
         }
       ]
@@ -37,22 +42,27 @@
       "assertions": [
         {
           "id": "states-loop-invariant",
+          "type": "llm",
           "text": "States the loop invariant explicitly (e.g., all elements in arr[lo..i] ≤ pivot and arr[j..hi] ≥ pivot)"
         },
         {
           "id": "proves-invariant-maintained",
+          "type": "llm",
           "text": "Proves (or argues) that the loop body maintains the invariant"
         },
         {
           "id": "proves-termination",
+          "type": "llm",
           "text": "States a bounding function (variant) that decreases at each iteration and proves the loop terminates"
         },
         {
           "id": "implementation-correct",
+          "type": "llm",
           "text": "The partition implementation is correct and works with quicksort"
         },
         {
           "id": "language-is-python",
+          "type": "static",
           "text": "Implementation is in Python as requested"
         }
       ]
@@ -65,22 +75,27 @@
       "assertions": [
         {
           "id": "base-case-proven",
+          "type": "llm",
           "text": "Proves base case: arr with 0 or 1 elements is already sorted (merge_sort returns it correctly)"
         },
         {
           "id": "inductive-step-proven",
+          "type": "llm",
           "text": "States and uses the inductive hypothesis: assumes merge_sort is correct on arrays smaller than n, proves it is correct on arrays of size n"
         },
         {
           "id": "termination-proven",
+          "type": "llm",
           "text": "Proves termination: len(arr) strictly decreases at each recursive call, reaching the base case"
         },
         {
           "id": "finds-bug-or-confirms-correct",
+          "type": "llm",
           "text": "Either identifies the bug in merge (left[i:] + right[j:] append is correct, but checks merge preserves sorted order) or confirms both functions are correct"
         },
         {
           "id": "derives-missing-tests",
+          "type": "llm",
           "text": "Derives test cases from proof structure: base case (empty, single), recursive case (two elements, general), merge correctness (equal elements, already sorted halves)"
         }
       ]

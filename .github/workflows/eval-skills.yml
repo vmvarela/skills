@@ -1,0 +1,526 @@
+name: Evaluate Skills
+
+on:
+  pull_request:
+    paths:
+      - "skills/*/SKILL.md"
+  workflow_dispatch:
+    inputs:
+      skill:
+        description: "Skill name to evaluate (e.g. github-scrum). Leave blank for all."
+        required: false
+        default: ""
+      delta_threshold:
+        description: "Max allowed pass-rate drop in pp before failing (default: 5)"
+        required: false
+        default: "5"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Detect which skills changed
+  # ---------------------------------------------------------------------------
+  detect-skills:
+    name: Detect changed skills
+    runs-on: ubuntu-latest
+    outputs:
+      skills: ${{ steps.detect.outputs.skills }}
+      has_skills: ${{ steps.detect.outputs.has_skills }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed skills
+        id: detect
+        run: |
+          MANUAL_SKILL="${{ inputs.skill }}"
+
+          if [[ -n "$MANUAL_SKILL" ]]; then
+            SKILLS="[\"$MANUAL_SKILL\"]"
+
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+            CHANGED=$(git diff --name-only "$BASE" "$HEAD" -- 'skills/*/SKILL.md')
+            if [[ -z "$CHANGED" ]]; then
+              SKILLS="[]"
+            else
+              SKILLS=$(echo "$CHANGED" \
+                | sed 's|skills/\([^/]*\)/SKILL\.md|\1|' \
+                | sort -u \
+                | jq -R . | jq -sc .)
+            fi
+
+          else
+            # Manual dispatch with no skill: evaluate all skills that have an eval file
+            SKILLS=$(python3 -c "
+          import json, pathlib
+          skills = set()
+          for f in pathlib.Path('evals').glob('*.json'):
+              d = json.loads(f.read_text())
+              if 'skill_name' in d:
+                  skills.add(d['skill_name'])
+          print(json.dumps(sorted(skills)))
+          ")
+          fi
+
+          if [[ "$SKILLS" == "[]" || -z "$SKILLS" ]]; then
+            echo "skills=[]"       >> "$GITHUB_OUTPUT"
+            echo "has_skills=false" >> "$GITHUB_OUTPUT"
+            echo "No skills to evaluate."
+          else
+            echo "skills=$SKILLS"  >> "$GITHUB_OUTPUT"
+            echo "has_skills=true"  >> "$GITHUB_OUTPUT"
+            echo "Skills to evaluate: $SKILLS"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Generate and grade one response per (skill × eval_id)
+  # ---------------------------------------------------------------------------
+  eval:
+    name: "Eval ${{ matrix.skill }} / eval-${{ matrix.eval_id }}"
+    needs: detect-skills
+    if: needs.detect-skills.outputs.has_skills == 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        skill: ${{ fromJson(needs.detect-skills.outputs.skills) }}
+        eval_id: [0, 1, 2]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # ---- Prepare prompt files ----
+
+      - name: Prepare prompt files
+        run: |
+          SKILL_FILE="skills/${{ matrix.skill }}/SKILL.md"
+          if [[ ! -f "$SKILL_FILE" ]]; then
+            echo "::error::Skill file not found: $SKILL_FILE"
+            exit 1
+          fi
+          cp "$SKILL_FILE" /tmp/skill_content.txt
+
+          python3 - <<'EOF'
+          import json, sys, pathlib
+
+          skill    = "${{ matrix.skill }}"
+          eval_id  = int("${{ matrix.eval_id }}")
+          evals_dir = pathlib.Path("evals")
+
+          candidates = [evals_dir / f"{skill}-evals.json", evals_dir / "evals.json"]
+          data = None
+          for c in candidates:
+              if c.exists():
+                  d = json.loads(c.read_text())
+                  if d.get("skill_name") == skill or c.name == f"{skill}-evals.json":
+                      data = d
+                      break
+
+          if not data:
+              print(f"::error::No eval file found for skill '{skill}'")
+              sys.exit(1)
+
+          eval_def = next((e for e in data["evals"] if e["id"] == eval_id), None)
+          if not eval_def:
+              print(f"::error::Eval {eval_id} not found for skill '{skill}'")
+              sys.exit(1)
+
+          pathlib.Path("/tmp/eval_prompt.txt").write_text(eval_def["prompt"])
+          print(f"Eval {eval_id} prompt written ({len(eval_def['prompt'])} chars).")
+          EOF
+
+      # ---- Step 1: Generate response ----
+
+      - name: Generate response (ai-inference)
+        id: generate
+        uses: actions/ai-inference@v1
+        with:
+          system-prompt-file: /tmp/skill_content.txt
+          prompt-file: /tmp/eval_prompt.txt
+          model: openai/gpt-4o
+          temperature: "0"
+          max-tokens: "2000"
+
+      - name: Save response to file
+        run: |
+          printf '%s' "${{ steps.generate.outputs.response }}" > /tmp/response.txt
+          echo "Response: $(wc -c < /tmp/response.txt) bytes, $(wc -l < /tmp/response.txt) lines"
+
+      # ---- Step 2: Static grading + build LLM grading prompt ----
+
+      - name: Static grade + prepare LLM prompt
+        run: |
+          # Run static grader; pending LLM assertions are identified here
+          python3 evals/grader.py \
+            --skill "${{ matrix.skill }}" \
+            --evals-dir evals \
+            --output /tmp/grading.json \
+            grade \
+            --eval-id "${{ matrix.eval_id }}" \
+            --response-file /tmp/response.txt
+
+          # Build combined grading prompt for all pending LLM assertions
+          python3 - <<'EOF'
+          import json, pathlib, sys
+
+          grading    = json.loads(pathlib.Path("/tmp/grading.json").read_text())
+          response   = pathlib.Path("/tmp/response.txt").read_text()
+          pending    = grading.get("pending_llm_assertions", [])
+
+          if not pending:
+              print("No LLM assertions to grade.")
+              # Write empty files so subsequent steps are no-ops
+              pathlib.Path("/tmp/pending_assertions.json").write_text("[]")
+              pathlib.Path("/tmp/ai_grade_prompt.txt").write_text(
+                  "No assertions to grade. Return exactly: {}"
+              )
+              sys.exit(0)
+
+          # Resolve assertion texts
+          skill    = grading["skill"]
+          eval_id  = grading["eval_id"]
+          evals_dir = pathlib.Path("evals")
+          candidates = [evals_dir / f"{skill}-evals.json", evals_dir / "evals.json"]
+          data = None
+          for c in candidates:
+              if c.exists():
+                  d = json.loads(c.read_text())
+                  if d.get("skill_name") == skill or c.name == f"{skill}-evals.json":
+                      data = d
+                      break
+
+          eval_def = next(e for e in data["evals"] if e["id"] == eval_id)
+          amap = {a["id"]: a["text"] for a in eval_def["assertions"]}
+
+          assertions = [{"id": aid, "text": amap[aid]} for aid in pending if aid in amap]
+          pathlib.Path("/tmp/pending_assertions.json").write_text(json.dumps(assertions))
+
+          # Build prompt
+          parts = [
+              "## Response to evaluate\n",
+              response,
+              "\n---\n\n## Assertions to evaluate\n",
+          ]
+          for a in assertions:
+              parts.append(f"**{a['id']}**: {a['text']}\n")
+          parts.append(
+              "\nReturn a JSON object where each key is an assertion ID from the list above "
+              'and the value is an object with "passed" (boolean) and "reason" (string, 1-2 sentences). '
+              "Be strict — no partial credit."
+          )
+          pathlib.Path("/tmp/ai_grade_prompt.txt").write_text("".join(parts))
+          print(f"LLM grading prompt built for {len(assertions)} assertions: {[a['id'] for a in assertions]}")
+          EOF
+
+      # ---- Step 3: LLM grading ----
+
+      - name: LLM grade pending assertions (ai-inference)
+        id: ai_grade
+        uses: actions/ai-inference@v1
+        with:
+          system-prompt: |
+            You are a strict, objective evaluator. Given a response and a list of assertions,
+            determine whether the response satisfies each one.
+            Return ONLY valid JSON — no markdown fences, no extra text.
+            The JSON must be an object where keys are assertion IDs and values are:
+              {"passed": <boolean>, "reason": "<1-2 sentences>"}
+            Be strict. No partial credit.
+          prompt-file: /tmp/ai_grade_prompt.txt
+          model: openai/gpt-4o
+          temperature: "0"
+          max-tokens: "1500"
+
+      # ---- Step 4: Merge LLM results and finalize ----
+
+      - name: Merge LLM grades and finalize
+        run: |
+          # Write ai_grade response to file (avoids shell interpolation issues with heredocs)
+          cat > /tmp/write_ai_response.py <<'PYEOF'
+          import pathlib, os, sys
+
+          # The response is passed via environment variable to avoid shell quoting
+          response = os.environ.get("AI_GRADE_RESPONSE", "")
+          pathlib.Path("/tmp/ai_grade_response.txt").write_text(response)
+          print(f"AI grade response: {len(response)} chars")
+          PYEOF
+          AI_GRADE_RESPONSE="${{ steps.ai_grade.outputs.response }}" python3 /tmp/write_ai_response.py
+
+          python3 - <<'EOF'
+          import json, re, pathlib, sys
+
+          raw = pathlib.Path("/tmp/ai_grade_response.txt").read_text().strip()
+          pending = json.loads(pathlib.Path("/tmp/pending_assertions.json").read_text())
+
+          llm_grades = {}
+          if pending:
+              # Strip markdown fences if present
+              m = re.search(r"```(?:json)?\s*([\s\S]+?)```", raw)
+              if m:
+                  raw = m.group(1).strip()
+              else:
+                  m2 = re.search(r"(\{[\s\S]+\})", raw)
+                  if m2:
+                      raw = m2.group(1).strip()
+              try:
+                  llm_grades = json.loads(raw)
+                  print(f"Parsed LLM grades for: {list(llm_grades.keys())}")
+              except Exception as e:
+                  print(f"::warning::Could not parse LLM grade JSON: {e}")
+                  print(f"Raw response was: {raw[:500]}")
+
+          pathlib.Path("/tmp/llm_grades.json").write_text(json.dumps(llm_grades))
+          EOF
+
+          # Finalize: merge LLM grades into static grading output
+          python3 evals/grader.py \
+            --skill "${{ matrix.skill }}" \
+            --evals-dir evals \
+            --output /tmp/grading-final.json \
+            grade \
+            --eval-id "${{ matrix.eval_id }}" \
+            --response-file /tmp/response.txt \
+            --llm-grades-file /tmp/llm_grades.json
+
+          echo "--- Grading summary ---"
+          python3 -c "
+          import json
+          g = json.load(open('/tmp/grading-final.json'))
+          s = g.get('summary', {})
+          print(f\"Passed: {s.get('passed')}/{s.get('total')} ({s.get('pass_rate',0)*100:.0f}%)\")
+          for a in g['assertions']:
+              icon = '✓' if a.get('passed') else ('✗' if a.get('passed') is False else '?')
+              print(f\"  {icon} [{a['type']}] {a['id']}: {a.get('reason','')[:80]}\")
+          "
+
+      - name: Upload grading artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "grading-${{ matrix.skill }}-eval${{ matrix.eval_id }}"
+          path: /tmp/grading-final.json
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Aggregate results per skill
+  # ---------------------------------------------------------------------------
+  aggregate:
+    name: "Aggregate ${{ matrix.skill }}"
+    needs: [detect-skills, eval]
+    if: needs.detect-skills.outputs.has_skills == 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        skill: ${{ fromJson(needs.detect-skills.outputs.skills) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download eval-0 grading
+        uses: actions/download-artifact@v4
+        with:
+          name: "grading-${{ matrix.skill }}-eval0"
+          path: /tmp/consolidated/${{ matrix.skill }}
+
+      - name: Rename eval-0
+        run: mv /tmp/consolidated/${{ matrix.skill }}/grading-final.json /tmp/consolidated/${{ matrix.skill }}/eval-0.json
+
+      - name: Download eval-1 grading
+        uses: actions/download-artifact@v4
+        with:
+          name: "grading-${{ matrix.skill }}-eval1"
+          path: /tmp/dl/eval1
+
+      - name: Move eval-1
+        run: mv /tmp/dl/eval1/grading-final.json /tmp/consolidated/${{ matrix.skill }}/eval-1.json
+
+      - name: Download eval-2 grading
+        uses: actions/download-artifact@v4
+        with:
+          name: "grading-${{ matrix.skill }}-eval2"
+          path: /tmp/dl/eval2
+
+      - name: Move eval-2
+        run: mv /tmp/dl/eval2/grading-final.json /tmp/consolidated/${{ matrix.skill }}/eval-2.json
+
+      - name: Verify consolidated results
+        run: ls -la /tmp/consolidated/${{ matrix.skill }}/
+
+      - name: Aggregate and compare to baseline
+        run: |
+          BASELINE="skills/${{ matrix.skill }}-workspace/iteration-1/benchmark.json"
+          BASELINE_ARG=""
+          if [[ -f "$BASELINE" ]]; then
+            BASELINE_ARG="--baseline $BASELINE"
+          else
+            echo "::notice::No baseline found at $BASELINE — regression check skipped."
+          fi
+
+          python3 evals/grader.py \
+            --skill "${{ matrix.skill }}" \
+            --evals-dir evals \
+            --output /tmp/summary-${{ matrix.skill }}.json \
+            aggregate \
+            --results-dir /tmp/consolidated/${{ matrix.skill }} \
+            $BASELINE_ARG \
+            --delta-threshold "${{ inputs.delta_threshold || '5' }}"
+
+      - name: Upload summary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "summary-${{ matrix.skill }}"
+          path: /tmp/summary-${{ matrix.skill }}.json
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Report results and gate the PR
+  # ---------------------------------------------------------------------------
+  report:
+    name: Report & Gate
+    needs: [detect-skills, aggregate]
+    if: needs.detect-skills.outputs.has_skills == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all summaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "summary-*"
+          path: /tmp/summaries
+          merge-multiple: true
+
+      - name: Build report and detect regression
+        id: report
+        run: |
+          python3 - <<'EOF'
+          import json, os, pathlib
+
+          summaries_dir = pathlib.Path("/tmp/summaries")
+          summaries = sorted(summaries_dir.glob("summary-*.json"))
+
+          lines = [
+              "## Skill Eval Results\n",
+              "| Skill | Passed | Total | Pass% | Baseline% | Delta | Status |",
+              "|-------|--------|-------|-------|-----------|-------|--------|",
+          ]
+
+          any_regression = False
+
+          for sf in summaries:
+              s = json.loads(sf.read_text())
+              skill   = s["skill"]
+              overall = s["overall"]
+              reg     = s["regression"]
+
+              passed = overall["passed"]
+              total  = overall["total"]
+              pct    = overall["pass_rate_pct"]
+
+              if reg["status"] == "ok":
+                  baseline_pct = reg.get("baseline_pass_rate_pct", "—")
+                  delta  = f"{reg['delta_pct']:+.1f}pp"
+                  status = "✅ OK"
+              elif reg["status"] == "regression":
+                  baseline_pct = reg.get("baseline_pass_rate_pct", "—")
+                  delta  = f"{reg['delta_pct']:+.1f}pp"
+                  status = "❌ REGRESSION"
+                  any_regression = True
+              else:
+                  baseline_pct = "—"
+                  delta  = "—"
+                  status = "⚠️ No baseline"
+
+              lines.append(
+                  f"| `{skill}` | {passed} | {total} | {pct}% | {baseline_pct}% | {delta} | {status} |"
+              )
+
+          lines.append("")
+          if any_regression:
+              lines.append(
+                  "> ❌ **Regression detected.** Pass rate dropped beyond the allowed threshold.  \n"
+                  "> To bypass, add the `eval:update-baseline` label to this PR."
+              )
+          else:
+              lines.append("> ✅ All evaluated skills passed the regression check.")
+
+          body = "\n".join(lines)
+          pathlib.Path("/tmp/pr_comment.md").write_text(body)
+          print(body)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"any_regression={'true' if any_regression else 'false'}\n")
+          EOF
+
+      - name: Post or update PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('/tmp/pr_comment.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(
+              c => c.user.type === 'Bot' && c.body.includes('## Skill Eval Results')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+              console.log('Updated existing eval comment.');
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+              console.log('Created new eval comment.');
+            }
+
+      - name: Check for bypass label
+        id: bypass
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels.map(l => l.name);
+            const bypass = labels.includes('eval:update-baseline');
+            core.setOutput('bypass', bypass ? 'true' : 'false');
+            if (bypass) {
+              core.notice('eval:update-baseline label present — regression gate bypassed.');
+            }
+
+      - name: Fail on regression (gate)
+        if: steps.report.outputs.any_regression == 'true' && steps.bypass.outputs.bypass != 'true'
+        run: |
+          echo "::error::Skill eval regression detected. One or more skills dropped below the pass-rate threshold."
+          echo "::error::To bypass, add the 'eval:update-baseline' label to the PR."
+          exit 1
