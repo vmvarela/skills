@@ -3,6 +3,11 @@
 Ready-to-use JQL queries. Replace `<PROJECT_KEY>` with your project key and
 `<COMPONENT>` with your component name where applicable.
 
+> **Status names** like `"In Progress"`, `"To Do"`, `"Backlog"` depend on your
+> JIRA workflow configuration and may differ between projects. Use `statusCategory`
+> (`"To Do"`, `"In Progress"`, `"Done"`) for portable queries that work across
+> any workflow configuration.
+
 ---
 
 ## Backlog and planning

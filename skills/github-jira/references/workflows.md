@@ -23,9 +23,7 @@ jira issue list \
 Or with JQL for more control:
 
 ```sh
-jira issue list --jql \
-  "project = <PROJECT_KEY> AND sprint is EMPTY AND component = <COMPONENT> \
-   AND statusCategory != Done ORDER BY priority ASC, created ASC"
+jira issue list --jql "project = <PROJECT_KEY> AND sprint is EMPTY AND component = <COMPONENT> AND statusCategory != Done ORDER BY priority ASC, created ASC"
 ```
 
 ### Step 2: Select tickets for the sprint
@@ -40,8 +38,7 @@ Selection criteria:
 To view Story Points alongside tickets:
 
 ```sh
-jira issue list --jql "project = <PROJECT_KEY> AND sprint is EMPTY AND component = <COMPONENT> \
-  AND statusCategory != Done ORDER BY priority ASC" \
+jira issue list --jql "project = <PROJECT_KEY> AND sprint is EMPTY AND component = <COMPONENT> AND statusCategory != Done ORDER BY priority ASC" \
   --columns KEY,SUMMARY,STATUS,PRIORITY,STORY_POINTS
 ```
 
@@ -166,8 +163,13 @@ jira issue comment add <PROJECT_KEY>-123 \
 # $TODAY = Get-Date -Format "dd/MM/yyyy"
 # jira issue comment add <PROJECT_KEY>-123 --body "Blocked: need access to the staging environment. Contacted @ops on $TODAY"
 
-# Resolve the blocker
-jira issue edit <PROJECT_KEY>-123 --remove-label blocked
+# Resolve the blocker — edit the ticket removing the label via curl
+# (jira CLI does not support --remove-label; use curl to update labels field directly)
+curl -s -X PUT \
+  -H "Authorization: Basic ${JIRA_AUTH}" \
+  -H "Content-Type: application/json" \
+  "${JIRA_BASE_URL}/rest/api/3/issue/<PROJECT_KEY>-123" \
+  -d '{"update": {"labels": [{"remove": "blocked"}]}}'
 jira issue move <PROJECT_KEY>-123 "In Progress"
 ```
 
@@ -179,8 +181,13 @@ Only add if urgent and it doesn't put the Sprint Goal at risk.
 # Add an urgent ticket to the active sprint
 jira sprint add <sprint-id> <PROJECT_KEY>-171
 
-# If scope is added, consider removing a ticket of equal size
-jira sprint remove <sprint-id> <PROJECT_KEY>-165   # move back to backlog
+# If scope is added, consider removing a ticket of equal size.
+# jira CLI does not support removing from a sprint — use curl to move it back to the backlog:
+curl -s -X POST \
+  -H "Authorization: Basic ${JIRA_AUTH}" \
+  -H "Content-Type: application/json" \
+  "${JIRA_BASE_URL}/rest/agile/1.0/backlog/issue" \
+  -d '{"issues": ["<PROJECT_KEY>-165"]}'
 ```
 
 ---
@@ -230,17 +237,18 @@ curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
   "${JIRA_BASE_URL}/rest/agile/1.0/board/<BOARD_ID>/sprint?state=active" \
   | jq '.values[0] | "\(.id): \(.name)"'
 
-# Close the sprint (incomplete tickets stay in the backlog automatically)
-# bash/zsh: substitute $(date -u +%Y-%m-%dT%H:%M:%S.000Z) with the current UTC date/time
-# PowerShell: use (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.000Z")
-curl -s -X POST \
-  -H "Authorization: Basic ${JIRA_AUTH}" \
-  -H "Content-Type: application/json" \
-  "${JIRA_BASE_URL}/rest/agile/1.0/sprint/<sprint-id>" \
-  -d "{
-    \"state\": \"closed\",
-    \"completeDate\": \"$(date -u +%Y-%m-%dT%H:%M:%S.000Z)\"
-  }"
+        # Close the sprint
+        # bash/zsh: uses command substitution to inject current UTC timestamp
+        COMPLETE_DATE=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+        curl -s -X POST \
+          -H "Authorization: Basic ${JIRA_AUTH}" \
+          -H "Content-Type: application/json" \
+          "${JIRA_BASE_URL}/rest/agile/1.0/sprint/<sprint-id>" \
+          -d "{\"state\": \"closed\", \"completeDate\": \"${COMPLETE_DATE}\"}"
+
+        # PowerShell equivalent:
+        # $completeDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.000Z")
+        # curl ... -d "{\"state\": \"closed\", \"completeDate\": \"$completeDate\"}"
 ```
 
 ### Step 5: Publish the GitHub Release
@@ -269,7 +277,8 @@ gh release edit v1.2.0 --draft=false
 
 ### Step 1: Create the retrospective ticket
 
-Write the body to a temp file for cross-platform compatibility:
+Write the body to a temp file for cross-platform compatibility.
+The `--body-file` flag requires jira-cli v1.4+. If your version doesn't have it, replace `--body-file /tmp/retro-body.md` with `--body "$(cat /tmp/retro-body.md)"` (bash/zsh) or pass the content via `--body` directly.
 
 ```sh
 # bash/zsh (Linux, macOS, WSL):
@@ -387,11 +396,13 @@ Goals:
 
 ### Add acceptance criteria to an unrefined ticket
 
+The `--body-file` flag requires jira-cli v1.4+. If unavailable, use `--body "$(cat /tmp/ticket-body.md)"` (bash/zsh).
+
 ```sh
 # View the current ticket
 jira issue view <PROJECT_KEY>-170
 
-# bash/zsh: edit with a temp file
+# bash/zsh: write to a temp file, then edit the ticket
 cat > /tmp/ticket-body.md << 'BODY'
 ## Description
 

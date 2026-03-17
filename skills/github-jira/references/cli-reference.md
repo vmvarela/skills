@@ -3,6 +3,11 @@
 Full reference for JIRA operations. For each operation the primary `jira` CLI
 command is shown, followed by the `curl` equivalent as fallback.
 
+> **Authentication note:** The `curl` examples in this file use **Basic Auth**
+> (`email:api_token` encoded as Base64). This is for **local/manual use only**.
+> For **GitHub Actions**, use OAuth 2.0 (Client Credentials) instead — see
+> `references/github-actions.md` for setup and usage.
+
 ---
 
 ## Environment variables setup (for `curl`)
@@ -42,6 +47,12 @@ jira issue list --status "To Do" --component <COMPONENT> --order-by priority
 jira issue list --sprint active
 jira issue list --jql "project = <PROJECT_KEY> AND sprint in openSprints()"
 
+# Useful output flags:
+# --plain          plain text output (easier for scripting, no color codes)
+# --columns        comma-separated list of columns: KEY,SUMMARY,STATUS,PRIORITY,STORY_POINTS,ASSIGNEE
+jira issue list --sprint active --plain
+jira issue list --sprint active --columns KEY,SUMMARY,STATUS,PRIORITY,STORY_POINTS
+
 # curl
 curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
   -H "Content-Type: application/json" \
@@ -58,7 +69,7 @@ jira issue view <PROJECT_KEY>-123
 # curl
 curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
   "${JIRA_BASE_URL}/rest/api/3/issue/<PROJECT_KEY>-123" \
-  | jq '{key: .key, summary: .fields.summary, status: .fields.status.name, assignee: .fields.assignee.displayName}'
+  | jq '{key: .key, summary: .fields.summary, status: .fields.status.name, assignee: (.fields.assignee.displayName // "Unassigned")}'
 ```
 
 ### Create an issue
@@ -141,7 +152,7 @@ curl -s -X PUT \
 ## State transitions (workflow)
 
 ```sh
-# jira CLI: view available transitions for a ticket
+# jira CLI: view available transitions for a ticket (interactive — shows a menu)
 jira issue move <PROJECT_KEY>-123
 
 # jira CLI: transition to a state
@@ -269,6 +280,7 @@ curl -s -X PUT \
   }"
 
 # curl: update fixVersion on a ticket
+# Use the "update" syntax (not "fields") to ADD a version without replacing existing ones
 curl -s -X PUT \
   -H "Authorization: Basic ${JIRA_AUTH}" \
   -H "Content-Type: application/json" \
@@ -295,14 +307,22 @@ curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
 
 ## Utilities
 
+> **API versions:** Use `rest/api/3` for issues, fields, versions, and project metadata. Use `rest/agile/1.0` for sprints and board operations.
+
 ```sh
 # View your own user info
+# Returns your JIRA username (the same format accepted by `jira issue assign`)
 jira me
 
-# View available fields in the project (useful for scripting)
+# View all fields in the project — both built-in and custom (useful for finding Story Points field ID)
 curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
   "${JIRA_BASE_URL}/rest/api/3/field" \
-  | jq '.[] | select(.custom == false) | "\(.id): \(.name)"'
+  | jq '.[] | "\(.id): \(.name)"'
+
+# Find the Story Points custom field ID (varies per JIRA instance):
+curl -s -H "Authorization: Basic ${JIRA_AUTH}" \
+  "${JIRA_BASE_URL}/rest/api/3/field" \
+  | jq -r '.[] | select(.name | test("story|point|sp"; "i")) | "\(.id): \(.name)"'
 
 # View project components
 curl -s -H "Authorization: Basic ${JIRA_AUTH}" \

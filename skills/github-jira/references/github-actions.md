@@ -107,6 +107,10 @@ jobs:
         id: jira-key
         run: |
           BRANCH="${{ github.head_ref }}"
+          # Extracts the first ALL_CAPS-NNN pattern (e.g. ABC-123).
+          # Note: if your project key contains numbers or shares a pattern with other tools
+          # (e.g. CI-99, AWS-123), consider restricting the regex to your specific project key:
+          #   grep -oE '<PROJECT_KEY>-[0-9]+' | head -1
           KEY=$(echo "$BRANCH" | grep -oE '[A-Z]+-[0-9]+' | head -1)
           if [ -z "$KEY" ]; then
             echo "No JIRA key found in branch '$BRANCH', skipping JIRA labels."
@@ -160,7 +164,7 @@ jobs:
           fi
 
           PRIORITY=$(echo "$RESPONSE" | jq -r '.fields.priority.name // "Medium"')
-          SP=$(echo "$RESPONSE" | jq -r --arg f "$SP_FIELD" '.fields[$f] | select(. != null) | floor | tostring // ""')
+          SP=$(echo "$RESPONSE" | jq -r --arg f "$SP_FIELD" '.fields[$f] // empty | floor | tostring')
           COMPONENTS=$(echo "$RESPONSE" | jq -r '[.fields.components[].name] | join(",")')
 
           echo "priority=$PRIORITY"     >> "$GITHUB_OUTPUT"
@@ -352,7 +356,8 @@ jobs:
         id: jira-keys
         run: |
           BODY="${{ github.event.release.body }}"
-          # Extract all unique JIRA keys from the changelog body
+          # Extracts all unique ALL_CAPS-NNN patterns from the changelog.
+          # Restrict to your project key if needed: grep -oE '<PROJECT_KEY>-[0-9]+'
           KEYS=$(echo "$BODY" | grep -oE '[A-Z]+-[0-9]+' | sort -u | tr '\n' ' ')
           echo "Found JIRA keys: $KEYS"
           echo "keys=$KEYS" >> "$GITHUB_OUTPUT"

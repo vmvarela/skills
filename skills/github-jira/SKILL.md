@@ -1,16 +1,6 @@
 ---
 name: github-jira
-description: >
-  Manage software projects with Scrum using JIRA Cloud as the backlog and
-  sprint board, GitHub for code and releases, and the native JIRA+GitHub
-  integration for automatic synchronization. Use this skill whenever the
-  user mentions JIRA tickets, JIRA sprints, JIRA backlog, ticket keys
-  (e.g. ABC-123), JQL queries, wants to create or move tickets, plan a
-  sprint, close a sprint, sync a GitHub Release with JIRA, or needs to
-  know how to name a branch from a ticket. Also applies when the user
-  asks how to link GitHub PRs to JIRA tickets, how to auto-label PRs
-  from JIRA fields, or how to manage a project that has a single JIRA
-  project for multiple GitHub repositories.
+description: "Manage software projects with Scrum using JIRA Cloud as the backlog and sprint board, GitHub for code and releases, and the native JIRA+GitHub integration for automatic synchronization. Use this skill whenever the user mentions JIRA tickets, JIRA sprints, JIRA backlog, ticket keys (e.g. ABC-123), JQL queries, wants to create or move tickets, plan a sprint, close a sprint, sync a GitHub Release with JIRA, or needs to know how to name a branch from a ticket. Also applies when the user asks how to link GitHub PRs to JIRA tickets, how to auto-label PRs from JIRA fields, or how to manage a project that has a single JIRA project for multiple GitHub repositories."
 ---
 
 # Skill: github-jira
@@ -33,7 +23,8 @@ all ticket operations. It is the equivalent of `gh` CLI but for JIRA.
 ```sh
 brew install jira-cli    # macOS (Homebrew)
 scoop install jira-cli   # Windows (Scoop)
-# Linux / no package manager: download binary from
+snap install jira-cli    # Linux (Snap)
+# Linux without Snap: download binary from
 # https://github.com/ankitpokhrel/jira-cli/releases
 ```
 
@@ -56,6 +47,9 @@ jira init \
 ```
 
 > The `--board` name must match exactly what appears in JIRA, not the numeric ID.
+> For commands that require a board **ID** (e.g. `jira sprint list --board <BOARD_ID>`),
+> find it from the board URL in JIRA: `.../jira/software/projects/<PROJECT_KEY>/boards/<ID>`
+> or by running `jira board list`.
 
 Config is stored at:
 - **macOS / Linux:** `~/.config/.jira/.config.yml`
@@ -224,14 +218,19 @@ Add `JIRA_API_TOKEN` to `.zshrc` / `.bashrc` so it persists across sessions.
 
 ```yaml
 project: <PROJECT_KEY>
-board: <BOARD_NAME>      # exact board name in JIRA
+board: <BOARD_NAME>      # exact board name in JIRA (used for jira init/interactive commands)
 component: <COMPONENT>   # exact Component name in JIRA (case-sensitive)
 ```
 
-> **IMPORTANT:** The `component` in `.jira.d/config.yml` is **not applied
-> automatically** when creating tickets with `jira issue create`. Always pass
-> it explicitly with `--component <COMPONENT>`. Without this flag the ticket
-> will have no component and won't appear in per-repository filters.
+> **IMPORTANT:** The `component` in `.jira.d/config.yml` acts as a default filter
+> for `jira issue list` commands but is **not applied automatically** when creating
+> tickets with `jira issue create`. Always pass `--component <COMPONENT>` explicitly
+> on creation. Without this flag the ticket will have no component and won't appear
+> in per-repository filters.
+>
+> **Per-repo config vs global:** `.jira.d/config.yml` at the repo root overrides
+> `~/.config/.jira/.config.yml`, allowing different project/board/component defaults
+> per repository while reusing the same JIRA credentials.
 
 ### 2. Configure secrets in GitHub
 
@@ -337,7 +336,7 @@ jira issue list --sprint "active" --component <COMPONENT> --plain
 **Transition a ticket** when starting work:
 
 ```sh
-# See available transitions
+# See available transitions (interactive — shows a menu with the ticket's valid states)
 jira issue move <PROJECT_KEY>-123
 
 # Move to "In Progress"
@@ -485,3 +484,24 @@ jira issue comment add <PROJECT_KEY>-123 --body "Done in PR #<number> — <link>
 - `references/cli-reference.md` — Full `jira` CLI and `curl` command reference
 - `references/github-actions.md` — `jira-label-pr.yml` and `jira-release-sync.yml` templates
 - `references/workflows.md` — Detailed sprint lifecycle procedures
+
+---
+
+## When to Apply This Skill
+
+Apply this skill when the user:
+- Mentions **JIRA** tickets, sprints, backlog, boards, or JQL
+- Uses ticket key notation like `ABC-123` or `<PROJECT_KEY>-NNN`
+- Wants to create, move, assign, or close JIRA tickets
+- Asks about linking GitHub branches or PRs to JIRA tickets
+- Wants to sync a GitHub Release with a JIRA version
+- Asks how to auto-label PRs from JIRA priority or story points
+- Is planning, running, reviewing, or closing a sprint in JIRA
+- Manages a single JIRA project across multiple GitHub repositories
+
+**This skill + `github-scrum`:** Both skills handle Scrum workflows but for
+different backends. Use `github-scrum` when managing work entirely within GitHub
+(Issues + Milestones). Use `github-jira` when JIRA is the source of truth for
+the backlog and sprint board, and GitHub is used only for code and releases.
+The two skills are compatible — you can use both in the same project if JIRA
+and GitHub coexist.
