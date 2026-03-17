@@ -1,0 +1,36 @@
+{
+  "eval_id": 2,
+  "run": "without_skill",
+  "expectations": [
+    {
+      "text": "Shows how to move incomplete issues to Sprint 4 milestone (close Sprint 3 milestone or reassign)",
+      "passed": false,
+      "evidence": "them or move them back to the backlog\n\n2. **Retrospective:**\n   - Create an issue for the"
+    },
+    {
+      "text": "Shows creating a retrospective issue",
+      "passed": true,
+      "evidence": "hem back to the backlog\n\n2. **Retrospective:**\n   - Create an issue for the retrospective"
+    },
+    {
+      "text": "Uses gh release create v0.3.0 with correct flags",
+      "passed": false,
+      "evidence": "- Create a new release for v0.3.0\n   - Add release notes about what was done\n\n4. **Next"
+    },
+    {
+      "text": "Shows creating Sprint 4 milestone",
+      "passed": true,
+      "evidence": "Closing Sprint 3 and Starting Sprint 4\n\nHere's what to do at sprint end:\n\n1. **Handle carr"
+    },
+    {
+      "text": "Steps in logical order: carryover \u2192 retro \u2192 release \u2192 next sprint planning",
+      "passed": true,
+      "evidence": "o at sprint end:\n\n1. **Handle carryover:**\n   - Look at the Sprint 3 milestone\n   - Find t"
+    },
+    {
+      "text": "Consistently uses gh CLI (not curl or API calls for GitHub operations)",
+      "passed": false,
+      "evidence": "from the GitHub UI or use the gh CLI if you prefer."
+    }
+  ]
+}

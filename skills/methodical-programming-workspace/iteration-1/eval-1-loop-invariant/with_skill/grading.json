@@ -1,0 +1,36 @@
+{
+  "eval_id": 1,
+  "run": "with_skill",
+  "expectations": [
+    {
+      "id": "states-loop-invariant",
+      "text": "Explicitly states the loop invariant as a logical predicate",
+      "passed": true,
+      "evidence": "Section 3 formally states loop invariant I as: '(∀x ∈ [lo, i): x <= pivot_value) ∧ (∀x ∈ [i, j): x > pivot_value) ∧ (arr[hi] == pivot_value) ∧ (lo <= i <= j <= hi)' with universal quantifiers and logical conjunctions."
+    },
+    {
+      "id": "proves-invariant-maintained",
+      "text": "Shows that the loop body maintains the invariant",
+      "passed": true,
+      "evidence": "Section 3 'Maintenance' provides detailed case analysis: Case 1 (arr[j] <= pivot) shows why swap preserves segments, Case 2 (arr[j] > pivot) shows why skipping preserves sorted segments. Both branches prove I holds after iteration."
+    },
+    {
+      "id": "proves-termination",
+      "text": "Provides a bounding function (variant) that decreases on each iteration",
+      "passed": true,
+      "evidence": "Section 4 'Termination Proof' explicitly defines t(j) = hi - j, proves it's always positive during loop (hi - j > 0 while j < hi), and proves strict decrease: t(j+1) = hi - (j+1) = t(j) - 1 < t(j)."
+    },
+    {
+      "id": "implementation-correct",
+      "text": "The partition function is correct and would work in quicksort",
+      "passed": true,
+      "evidence": "Implementation uses Lomuto scheme correctly. Post-loop swap places pivot at final position. Postcondition satisfied: [lo,i) all ≤ pivot at arr[i], [i+1,hi+1) all > pivot. Test suite in Section 5 covers basic, all-less, all-greater, mixed, subrange, duplicates cases."
+    },
+    {
+      "id": "language-is-python",
+      "text": "Implementation is in Python as requested",
+      "passed": true,
+      "evidence": "Entire implementation in Section 2 is Python 3: uses for-loop, if/else, array swaps, docstrings, and comments consistent with Python syntax and idioms."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "eval_id": 2,
+  "run": "without_skill",
+  "assertions": [
+    {
+      "id": "under-60-lines",
+      "passed": false,
+      "note": "66 lines — exceeds the 60-line limit. Padded with CoC, license, and repetitive bullet lists."
+    },
+    {
+      "id": "has-how-to-submit-pr",
+      "passed": true,
+      "note": "8-step contributing process covers fork, clone, branch, change, test, commit, push, PR."
+    },
+    {
+      "id": "no-code-of-conduct-boilerplate",
+      "passed": false,
+      "note": "Starts with '## Code of Conduct' section: 'Our community follows a Code of Conduct to ensure a safe and welcoming environment for all contributors.' — pure boilerplate."
+    },
+    {
+      "id": "practical-not-corporate",
+      "passed": false,
+      "note": "'We welcome contributions from the community!' and formal section headers like 'Pull Request Process' with 4 bureaucratic bullet points. Not appropriate for a solo-maintained tool."
+    },
+    {
+      "id": "mentions-testing",
+      "passed": true,
+      "note": "go test ./... mentioned in setup steps and dedicated Testing section."
+    }
+  ],
+  "pass_count": 2,
+  "total": 5,
+  "pass_rate": 0.4
+}

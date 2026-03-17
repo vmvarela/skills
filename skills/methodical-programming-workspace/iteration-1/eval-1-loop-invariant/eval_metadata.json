@@ -1,0 +1,27 @@
+{
+  "eval_id": 1,
+  "title": "Loop con invariante",
+  "prompt": "Help me implement an in-place partition function for quicksort (the Lomuto or Hoare scheme — your choice). I want to see the loop invariant, prove the loop maintains it, and prove termination with a bounding function. Language: Python.",
+  "assertions": [
+    {
+      "id": "states-loop-invariant",
+      "text": "Explicitly states the loop invariant as a logical predicate"
+    },
+    {
+      "id": "proves-invariant-maintained",
+      "text": "Shows that the loop body maintains the invariant"
+    },
+    {
+      "id": "proves-termination",
+      "text": "Provides a bounding function (variant) that decreases on each iteration"
+    },
+    {
+      "id": "implementation-correct",
+      "text": "The partition function is correct and would work in quicksort"
+    },
+    {
+      "id": "language-is-python",
+      "text": "Implementation is in Python as requested"
+    }
+  ]
+}

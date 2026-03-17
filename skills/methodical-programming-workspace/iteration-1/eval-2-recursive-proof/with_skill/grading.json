@@ -1,0 +1,36 @@
+{
+  "eval_id": 2,
+  "run": "with_skill",
+  "expectations": [
+    {
+      "id": "base-case-proven",
+      "text": "Proves the base case (len <= 1 returns sorted array)",
+      "passed": true,
+      "evidence": "Section 3 'Base Case' explicitly proves: 'When len(arr) <= 1, direct case returns arr unchanged. A list of 0 or 1 element is trivially sorted ✓'. Shows correctness of base constructor []."
+    },
+    {
+      "id": "inductive-step-proven",
+      "text": "States and proves the inductive step",
+      "passed": true,
+      "evidence": "Section 4 'Inductive Step' states IH: 'Assume merge_sort(left) and merge_sort(right) return sorted permutations'. Then Section 5 proves merge() combines two sorted lists into sorted result via loop invariant and case analysis. Completes inductive proof."
+    },
+    {
+      "id": "termination-proven",
+      "text": "Shows termination argument (e.g., subarray size strictly decreases)",
+      "passed": true,
+      "evidence": "Section 7 'Termination Proof' defines bounding function t(arr)=len(arr), proves it's natural number initially, proves len(left)=mid<len(arr) and len(right)<len(arr) so both decrease strictly, and concludes recursion terminates."
+    },
+    {
+      "id": "finds-bug-or-confirms-correct",
+      "text": "Either identifies a bug in the provided code or confirms it's correct with justification",
+      "passed": true,
+      "evidence": "Section 8 'Bug Analysis' explicitly states 'CORRECT ✓' with detailed justification: base case correct, recursion correct, merge correct, stability preserved, all elements preserved. No bugs found with technical reasoning."
+    },
+    {
+      "id": "derives-missing-tests",
+      "text": "Suggests test cases that would exercise the specification's edge cases",
+      "passed": true,
+      "evidence": "Section 9 'Derived Test Cases' lists 12 tests explicitly derived from specification: base constructor (empty), minimal inductive (single, two elements), general cases, sorted/reverse/duplicates/negatives/floats. Each cited from specification structure."
+    }
+  ]
+}

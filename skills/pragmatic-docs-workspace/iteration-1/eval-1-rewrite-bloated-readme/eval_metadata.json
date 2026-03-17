@@ -1,0 +1,31 @@
+{
+  "eval_id": 1,
+  "name": "Rewrite bloated README",
+  "scenario": "Rewrite a bloated DataPipe README to be concise and useful",
+  "assertions": [
+    {
+      "id": "removes-welcome-intro",
+      "text": "Removes or rewrites the generic 'Welcome to DataPipe!' introduction"
+    },
+    {
+      "id": "removes-empty-features-list",
+      "text": "Removes or condenses the vague 'Easy to use, Highly configurable' features list"
+    },
+    {
+      "id": "keeps-installation-steps",
+      "text": "Keeps the concrete installation commands"
+    },
+    {
+      "id": "adds-real-usage-example",
+      "text": "Adds or preserves a real code/usage example (the README had none)"
+    },
+    {
+      "id": "shorter-than-original",
+      "text": "Result is shorter than the original (~60 lines)"
+    },
+    {
+      "id": "honest-about-gaps",
+      "text": "Either adds real usage examples or notes that the original lacked them"
+    }
+  ]
+}

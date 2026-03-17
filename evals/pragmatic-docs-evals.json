@@ -1,0 +1,97 @@
+{
+  "skill_name": "pragmatic-docs",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Write a README.md for a CLI tool called 'snapenv' written in Go. It saves and restores sets of environment variables. Commands: snapenv save <name>, snapenv load <name>, snapenv list.",
+      "expected_output": "A concise README that immediately explains what the tool does, shows real commands with examples, includes installation, and avoids filler language. Under 100 lines.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "no-welcome-fluff",
+          "text": "Does NOT start with 'Welcome to' or similar filler phrases"
+        },
+        {
+          "id": "shows-real-commands",
+          "text": "Shows actual CLI commands (snapenv save, snapenv load, snapenv list) with examples"
+        },
+        {
+          "id": "explains-what-it-does-upfront",
+          "text": "First paragraph/sentence explains what the tool does concisely"
+        },
+        {
+          "id": "no-empty-sections",
+          "text": "Does not include empty or placeholder sections (e.g., '## Contributing\\nTBD')"
+        },
+        {
+          "id": "installation-included",
+          "text": "Includes how to install the tool"
+        },
+        {
+          "id": "under-100-lines",
+          "text": "README is under 100 lines (pragmatic = brief)"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Rewrite this README to be more concise and useful:\n\n# Welcome to DataPipe!\n\nDataPipe is a powerful and flexible data pipeline framework.\n\n## Features\n- Easy to use\n- Highly configurable\n- Supports multiple data sources\n\n## Installation\n```bash\npip install datapipe\n```\n\n## Getting Started\nRead the docs.\n\n## Contributing\nContributions welcome! See CONTRIBUTING.md.\n\n## License\nMIT",
+      "expected_output": "A shorter, more useful README that removes the welcome intro, replaces vague feature list with real examples, keeps installation, and adds a real usage example. Should be shorter than the original.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "removes-welcome-intro",
+          "text": "Removes or rewrites the generic 'Welcome to DataPipe!' introduction"
+        },
+        {
+          "id": "removes-empty-features-list",
+          "text": "Removes or condenses the vague 'Easy to use, Highly configurable' features list"
+        },
+        {
+          "id": "keeps-installation-steps",
+          "text": "Keeps the concrete installation commands"
+        },
+        {
+          "id": "adds-real-usage-example",
+          "text": "Adds or preserves a real code/usage example (the README had none)"
+        },
+        {
+          "id": "shorter-than-original",
+          "text": "Result is shorter than the original (~60 lines)"
+        },
+        {
+          "id": "honest-about-gaps",
+          "text": "Either adds real usage examples or notes that the original lacked them"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write a CONTRIBUTING.md for 'snapenv', a small Go CLI tool maintained by a single developer. Keep it practical and short.",
+      "expected_output": "A concise CONTRIBUTING.md under 60 lines with practical instructions for submitting PRs, testing requirements, and direct tone appropriate for a solo project. No CoC boilerplate.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "under-60-lines",
+          "text": "CONTRIBUTING.md is under 60 lines"
+        },
+        {
+          "id": "has-how-to-submit-pr",
+          "text": "Explains how to submit a pull request"
+        },
+        {
+          "id": "no-code-of-conduct-boilerplate",
+          "text": "Does not include generic CoC boilerplate or just links to a template"
+        },
+        {
+          "id": "practical-not-corporate",
+          "text": "Tone is direct and practical, not corporate/formal"
+        },
+        {
+          "id": "mentions-testing",
+          "text": "Mentions how to run tests or at least that tests should pass"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "eval_id": 2,
+  "name": "CONTRIBUTING.md guide",
+  "scenario": "Write a CONTRIBUTING.md for 'snapenv', a small solo-maintained Go CLI tool",
+  "assertions": [
+    {
+      "id": "under-60-lines",
+      "text": "CONTRIBUTING.md is under 60 lines"
+    },
+    {
+      "id": "has-how-to-submit-pr",
+      "text": "Explains how to submit a pull request"
+    },
+    {
+      "id": "no-code-of-conduct-boilerplate",
+      "text": "Does not include generic CoC boilerplate or just links to a template"
+    },
+    {
+      "id": "practical-not-corporate",
+      "text": "Tone is direct and practical, not corporate/formal"
+    },
+    {
+      "id": "mentions-testing",
+      "text": "Mentions how to run tests or at least that tests should pass"
+    }
+  ]
+}

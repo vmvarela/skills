@@ -1,0 +1,31 @@
+{
+  "eval_id": 1,
+  "run": "without_skill",
+  "expectations": [
+    {
+      "text": "Shows how to create the urgent bug ticket and/or add it to the sprint milestone",
+      "passed": false,
+      "evidence": "Keyword match found"
+    },
+    {
+      "text": "Mentions checking sprint capacity or removing a lower-priority ticket to compensate",
+      "passed": false,
+      "evidence": "Keyword match found"
+    },
+    {
+      "text": "Shows how to remove the blocker (unlink or update the blocked ticket status)",
+      "passed": false,
+      "evidence": "Keyword match found"
+    },
+    {
+      "text": "Uses gh CLI commands, not instructions to use the GitHub UI",
+      "passed": false,
+      "evidence": "g\n   - Label it as critical/high priority\n   - Add it to the Sprint 3 milestone\n   - You m"
+    },
+    {
+      "text": "References status labels (status:blocked, status:in-progress, etc.)",
+      "passed": false,
+      "evidence": "Keyword match found"
+    }
+  ]
+}

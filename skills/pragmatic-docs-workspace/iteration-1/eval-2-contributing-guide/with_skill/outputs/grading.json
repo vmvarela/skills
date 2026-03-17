@@ -1,0 +1,34 @@
+{
+  "eval_id": 2,
+  "run": "with_skill",
+  "assertions": [
+    {
+      "id": "under-60-lines",
+      "passed": true,
+      "note": "46 lines — well under the 60-line limit."
+    },
+    {
+      "id": "has-how-to-submit-pr",
+      "passed": true,
+      "note": "Clear 3-step PR process: fork+branch, test, submit with one-sentence description."
+    },
+    {
+      "id": "no-code-of-conduct-boilerplate",
+      "passed": true,
+      "note": "No CoC section at all. No template links."
+    },
+    {
+      "id": "practical-not-corporate",
+      "passed": true,
+      "note": "'Thanks for helping. Here's what you need to know.' and 'We're looking for working code, not perfect prose.' — direct, human tone throughout."
+    },
+    {
+      "id": "mentions-testing",
+      "passed": true,
+      "note": "Dedicated Testing section with 'go test ./...' and 'go vet ./...' commands."
+    }
+  ],
+  "pass_count": 5,
+  "total": 5,
+  "pass_rate": 1.0
+}

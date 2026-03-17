@@ -1,0 +1,36 @@
+{
+  "eval_id": 2,
+  "run": "with_skill",
+  "expectations": [
+    {
+      "text": "Shows how to move incomplete issues to Sprint 4 milestone (close Sprint 3 milestone or reassign)",
+      "passed": true,
+      "evidence": "23\ngh issue edit $ISSUE_NUM --milestone \"\" \\\n  --remove-label \"status:in-progress,status:b"
+    },
+    {
+      "text": "Shows creating a retrospective issue",
+      "passed": true,
+      "evidence": "gh issue create \\\n  --title \"Retrospective: Sprint 3\" \\\n  --body \"## What went well?\n\n- S"
+    },
+    {
+      "text": "Uses gh release create v0.3.0 with correct flags",
+      "passed": true,
+      "evidence": "ease notes from closed issues\ngh release create v0.3.0 \\\n  --title \"v0.3.0 - Sprint 3 Rele"
+    },
+    {
+      "text": "Shows creating Sprint 4 milestone",
+      "passed": true,
+      "evidence": "# Closing Sprint 3 & Planning Sprint 4\n\n## Step 1: Handle Carryover Issues\n\nIdentify incom"
+    },
+    {
+      "text": "Steps in logical order: carryover \u2192 retro \u2192 release \u2192 next sprint planning",
+      "passed": true,
+      "evidence": "g Sprint 4\n\n## Step 1: Handle Carryover Issues\n\nIdentify incomplete issues in Sprint 3:\n\n`"
+    },
+    {
+      "text": "Consistently uses gh CLI (not curl or API calls for GitHub operations)",
+      "passed": true,
+      "evidence": "List open (incomplete) issues\ngh issue list --milestone \"Sprint 3\" --state open \\\n  --json"
+    }
+  ]
+}

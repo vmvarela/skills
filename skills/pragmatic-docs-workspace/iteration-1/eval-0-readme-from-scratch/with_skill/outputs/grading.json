@@ -1,0 +1,39 @@
+{
+  "eval_id": 0,
+  "run": "with_skill",
+  "assertions": [
+    {
+      "id": "no-welcome-fluff",
+      "passed": true,
+      "note": "Starts with '# snapenv' then immediately explains what it does. No filler."
+    },
+    {
+      "id": "shows-real-commands",
+      "passed": true,
+      "note": "Shows snapenv save, snapenv load, snapenv list with realistic terminal output."
+    },
+    {
+      "id": "explains-what-it-does-upfront",
+      "passed": true,
+      "note": "Second line: 'snapenv saves and restores sets of environment variables.' — clear and immediate."
+    },
+    {
+      "id": "no-empty-sections",
+      "passed": true,
+      "note": "All sections (Installation, Quick Start, How It Works, Use Cases, Limitations) have real content."
+    },
+    {
+      "id": "installation-included",
+      "passed": true,
+      "note": "go install and binary download from Releases both provided."
+    },
+    {
+      "id": "under-100-lines",
+      "passed": true,
+      "note": "60 lines total — well under the 100-line limit."
+    }
+  ],
+  "pass_count": 6,
+  "total": 6,
+  "pass_rate": 1.0
+}

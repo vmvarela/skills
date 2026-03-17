@@ -1,0 +1,89 @@
+{
+  "skill_name": "methodical-programming",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Write a function `binary_search(arr, target)` in Python that returns the index of target in a sorted array, or -1 if not found. Use formal pre/post conditions and derive the implementation from the specification.",
+      "expected_output": "Formal Pre/Post specification, derivation of implementation from postcondition analysis, correct implementation, and test cases derived from the specification structure",
+      "files": [],
+      "assertions": [
+        {
+          "id": "has-precondition",
+          "text": "States a formal precondition (Pre) for the function — e.g., arr is sorted, arr is a list of comparable elements"
+        },
+        {
+          "id": "has-postcondition",
+          "text": "States a formal postcondition (Post) relating inputs and output — e.g., result = i ↔ arr[i] = target; result = -1 ↔ target ∉ arr"
+        },
+        {
+          "id": "derives-implementation",
+          "text": "Explains how the implementation is derived from the postcondition (not just written ad-hoc)"
+        },
+        {
+          "id": "tests-from-postcondition",
+          "text": "Derives test cases from the postcondition structure (target found, target not found, edge cases from precondition boundaries)"
+        },
+        {
+          "id": "implementation-correct",
+          "text": "The binary search implementation is correct and handles edge cases (empty array, target at boundaries)"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Implement a partition function for quicksort in Python: `partition(arr, lo, hi)` that rearranges arr[lo..hi] around a pivot and returns the pivot index. Prove the loop invariant and termination.",
+      "expected_output": "Loop invariant stated formally, proof that body maintains invariant, bounding function for termination, correct implementation in Python",
+      "files": [],
+      "assertions": [
+        {
+          "id": "states-loop-invariant",
+          "text": "States the loop invariant explicitly (e.g., all elements in arr[lo..i] ≤ pivot and arr[j..hi] ≥ pivot)"
+        },
+        {
+          "id": "proves-invariant-maintained",
+          "text": "Proves (or argues) that the loop body maintains the invariant"
+        },
+        {
+          "id": "proves-termination",
+          "text": "States a bounding function (variant) that decreases at each iteration and proves the loop terminates"
+        },
+        {
+          "id": "implementation-correct",
+          "text": "The partition implementation is correct and works with quicksort"
+        },
+        {
+          "id": "language-is-python",
+          "text": "Implementation is in Python as requested"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Here is a merge sort implementation. Prove its correctness by structural induction and derive any missing test cases from the proof. ```python\ndef merge_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    mid = len(arr) // 2\n    left = merge_sort(arr[:mid])\n    right = merge_sort(arr[mid:])\n    return merge(left, right)\n\ndef merge(left, right):\n    result = []\n    i = j = 0\n    while i < len(left) and j < len(right):\n        if left[i] <= right[j]:\n            result.append(left[i])\n            i += 1\n        else:\n            result.append(right[j])\n            j += 1\n    return result + left[i:] + right[j:]\n```",
+      "expected_output": "Inductive proof: base case (len ≤ 1), inductive step (assuming merge_sort correct on halves → correct on whole), termination proof, test cases derived from proof structure",
+      "files": [],
+      "assertions": [
+        {
+          "id": "base-case-proven",
+          "text": "Proves base case: arr with 0 or 1 elements is already sorted (merge_sort returns it correctly)"
+        },
+        {
+          "id": "inductive-step-proven",
+          "text": "States and uses the inductive hypothesis: assumes merge_sort is correct on arrays smaller than n, proves it is correct on arrays of size n"
+        },
+        {
+          "id": "termination-proven",
+          "text": "Proves termination: len(arr) strictly decreases at each recursive call, reaching the base case"
+        },
+        {
+          "id": "finds-bug-or-confirms-correct",
+          "text": "Either identifies the bug in merge (left[i:] + right[j:] append is correct, but checks merge preserves sorted order) or confirms both functions are correct"
+        },
+        {
+          "id": "derives-missing-tests",
+          "text": "Derives test cases from proof structure: base case (empty, single), recursive case (two elements, general), merge correctness (equal elements, already sorted halves)"
+        }
+      ]
+    }
+  ]
+}

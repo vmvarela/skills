@@ -1,0 +1,97 @@
+{
+  "skill_name": "github-scrum",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I have a new GitHub repo called 'payments-api'. Set it up for Scrum: create all the required labels (type, priority, size, status namespaces), create Sprint 1 milestone lasting 2 weeks, and show me the commands to run.",
+      "expected_output": "Complete gh CLI commands to: (1) create all labels in all 4 namespaces with GH_PAGER=cat, proper colors, and descriptions, (2) create Sprint 1 milestone via gh api with due_on in ISO 8601 format, (3) include cross-platform date generation or clear placeholder",
+      "files": [],
+      "assertions": [
+        {
+          "id": "uses-gh-pager-cat",
+          "text": "Includes GH_PAGER=cat before gh commands to prevent output paging"
+        },
+        {
+          "id": "creates-type-labels",
+          "text": "Creates type:* labels (at minimum: type:feature, type:bug, type:chore, type:spike)"
+        },
+        {
+          "id": "creates-priority-labels",
+          "text": "Creates priority:* labels (at minimum: priority:critical, priority:high, priority:medium, priority:low)"
+        },
+        {
+          "id": "creates-size-labels",
+          "text": "Creates size:* labels (at minimum: size:xs, size:s, size:m, size:l, size:xl)"
+        },
+        {
+          "id": "creates-status-labels",
+          "text": "Creates status:* labels (at minimum: status:ready, status:in-progress, status:blocked, status:review)"
+        },
+        {
+          "id": "creates-milestone-via-api",
+          "text": "Creates Sprint 1 milestone using gh api repos/{owner}/{repo}/milestones --method POST (not gh milestone create)"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "It's mid-sprint on Sprint 2. A production outage just happened — I need to add an urgent bug ticket for 'Payment gateway timeout under load', mark it high priority, assign it to Sprint 2, and figure out if I need to remove a lower-priority item to keep capacity. Show me the gh CLI commands.",
+      "expected_output": "Commands to: (1) create urgent bug issue with correct labels (type:bug, priority:critical or high, status:in-progress), (2) assign to Sprint 2 milestone, (3) list current sprint issues with size labels for capacity review, (4) suggest moving a lower-priority item out via --milestone ''",
+      "files": [],
+      "assertions": [
+        {
+          "id": "creates-issue-with-labels",
+          "text": "Creates issue with gh issue create including --label flags for type:bug and priority:critical or priority:high"
+        },
+        {
+          "id": "assigns-to-sprint-milestone",
+          "text": "Assigns the new issue to Sprint 2 milestone with --milestone 'Sprint 2'"
+        },
+        {
+          "id": "shows-sprint-capacity",
+          "text": "Lists current Sprint 2 issues (open) to assess capacity impact"
+        },
+        {
+          "id": "suggests-carryover-command",
+          "text": "Shows how to remove an item from sprint using --milestone '' or equivalent gh CLI command"
+        },
+        {
+          "id": "uses-gh-cli-only",
+          "text": "Uses only gh CLI commands — does not suggest using the GitHub UI"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Sprint 3 just ended. Help me: (1) move unfinished issues to Sprint 4, (2) create a retrospective issue, (3) publish GitHub release v0.3.0, and (4) create Sprint 4 milestone. Show me all the gh CLI commands.",
+      "expected_output": "Commands to: (1) list open Sprint 3 issues and remove milestone assignment, (2) create Sprint 4 milestone with due date, (3) assign carryover issues to Sprint 4, (4) create retrospective issue using gh issue create, (5) gh release create with proper syntax",
+      "files": [],
+      "assertions": [
+        {
+          "id": "lists-open-sprint-issues",
+          "text": "Lists open issues in Sprint 3 to identify carryover candidates"
+        },
+        {
+          "id": "creates-sprint-4-milestone",
+          "text": "Creates Sprint 4 milestone via gh api with POST method and due_on field"
+        },
+        {
+          "id": "moves-carryover-issues",
+          "text": "Shows how to reassign carryover issues to Sprint 4 (--milestone 'Sprint 4')"
+        },
+        {
+          "id": "creates-retro-issue",
+          "text": "Creates a retrospective issue with gh issue create including relevant labels"
+        },
+        {
+          "id": "creates-github-release",
+          "text": "Uses 'gh release create v0.3.0' with --title and --notes or --generate-notes flags"
+        },
+        {
+          "id": "logical-step-order",
+          "text": "Steps are in logical order: carryover handling → retro → release → next sprint setup"
+        }
+      ]
+    }
+  ]
+}
