@@ -157,7 +157,7 @@ jobs:
 
       - name: Save response to file
         run: |
-          printf '%s' "${{ steps.generate.outputs.response }}" > /tmp/response.txt
+          cp "${{ steps.generate.outputs.response-file }}" /tmp/response.txt
           echo "Response: $(wc -c < /tmp/response.txt) bytes, $(wc -l < /tmp/response.txt) lines"
 
       # ---- Step 2: Static grading + build LLM grading prompt ----
@@ -248,16 +248,9 @@ jobs:
 
       - name: Merge LLM grades and finalize
         run: |
-          # Write ai_grade response to file (avoids shell interpolation issues with heredocs)
-          cat > /tmp/write_ai_response.py <<'PYEOF'
-          import pathlib, os, sys
-
-          # The response is passed via environment variable to avoid shell quoting
-          response = os.environ.get("AI_GRADE_RESPONSE", "")
-          pathlib.Path("/tmp/ai_grade_response.txt").write_text(response)
-          print(f"AI grade response: {len(response)} chars")
-          PYEOF
-          AI_GRADE_RESPONSE="${{ steps.ai_grade.outputs.response }}" python3 /tmp/write_ai_response.py
+          # Use response-file output to avoid shell interpolation of LLM content
+          cp "${{ steps.ai_grade.outputs.response-file }}" /tmp/ai_grade_response.txt
+          echo "AI grade response: $(wc -c < /tmp/ai_grade_response.txt) chars"
 
           python3 - <<'EOF'
           import json, re, pathlib, sys
