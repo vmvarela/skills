@@ -1,22 +1,15 @@
 ---
 name: github-scrum
-description: >
-  Manage software projects with Scrum on GitHub using Projects, automated workflows, 
-  and Definition of Ready validation. Trigger: sprints, backlog, milestones, velocity, 
-  retrospectives, planning, project boards, or any Scrum-related request.
-license: Apache-2.0
-metadata:
-  author: gentleman-programming
-  version: "2.0"
+description: Manage software projects with Scrum on GitHub. Plan MVPs, maintain a Product Backlog as Issues, run Sprints as Milestones or Project Iterations, and automate setup with the gh CLI. Adapted for solo developers and small teams (1-3 people). Use this skill whenever the user mentions sprints, issues, backlog, milestones, pull requests, project planning, releases, retrospectives, or any aspect of managing software work on GitHub — even if they don't explicitly mention Scrum.
 ---
 
 # GitHub Scrum
 
-Manage software projects using Scrum on GitHub, adapted for solo developers and small teams (1-3 people). This skill maps Scrum artifacts and events to GitHub primitives (Issues, Projects, Labels, Releases) and provides automated workflows for sprint management.
+Manage software projects using Scrum on GitHub, adapted for solo developers and small teams (1-3 people). This skill maps Scrum artifacts and events to GitHub primitives (Issues, Milestones/Project Iterations, Labels, Releases) and automates project setup and sprint management.
 
 **Key Features:**
-- GitHub Projects integration for sprint tracking
-- Automated DoR (Definition of Ready) validation
+- GitHub Milestones or Projects for Sprint tracking
+- Automated DoR (Definition of Ready) validation  
 - Automatic velocity calculation and reporting
 - PR status transitions
 - Sprint lifecycle automation
@@ -33,6 +26,23 @@ Reference: [The 2020 Scrum Guide](https://scrumguides.org/scrum-guide.html).
 
 For a full command reference, see [references/tooling.md](references/tooling.md).
 
+### Cross-platform Date Generation
+
+When generating ISO 8601 dates for milestone `due_on` fields, use a portable snippet — `date -d` is GNU/Linux only and fails on macOS:
+
+```sh
+# Portable (Linux + macOS) — recommended
+DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
+
+# Linux/GNU only
+DUE_DATE=$(date -u -d "+14 days" +%Y-%m-%dT00:00:00Z)
+
+# macOS/BSD only
+DUE_DATE=$(date -u -v+14d +%Y-%m-%dT00:00:00Z)
+```
+
+Always use the Python one-liner when the target platform is unknown. Adjust `days=14` to match the sprint length.
+
 ---
 
 ## Scrum → GitHub Mapping
@@ -40,14 +50,13 @@ For a full command reference, see [references/tooling.md](references/tooling.md)
 | Scrum Concept | GitHub Primitive | Notes |
 |---|---|---|
 | Product Goal | Repo description + pinned issue | Long-term vision in 1-2 sentences |
-| Product Backlog | Issues (Status=Backlog in Project) | Ordered by priority labels |
-| Sprint | Project Iteration | Fixed-length timebox (1-2 weeks) |
-| Sprint Backlog | Issues in current Sprint iteration | Selected during Sprint Planning |
-| Sprint Goal | Project field `Sprint Goal` | Why this sprint is valuable |
+| Product Backlog | Issues (open, no milestone) | Ordered by priority labels |
+| Sprint | Milestone (with due date) or Project Iteration | Fixed-length timebox (1-2 weeks recommended) |
+| Sprint Backlog | Issues assigned to a milestone/iteration | Selected during Sprint Planning |
+| Sprint Goal | Milestone description or Project field | Why this sprint is valuable |
 | Increment | GitHub Release / tag | Usable product at sprint end |
-| Definition of Ready | Validated automatically | See [references/dor-checklist.md](references/dor-checklist.md) |
 | Definition of Done | Checklist in issue/PR template | Shared quality standard |
-| Sprint Review | Close iteration + release notes | Inspect what was delivered |
+| Sprint Review | Close milestone + release notes | Inspect what was delivered |
 | Sprint Retrospective | Issue with label `retrospective` | Inspect how work went |
 | Backlog Refinement | Edit issues: add details, resize, reprioritize | Ongoing activity |
 
@@ -55,58 +64,17 @@ No formal role separation. The user acts as Product Owner, Scrum Master, and Dev
 
 ---
 
-## GitHub Project Setup
+## Labels System
 
-### 1. Create the Scrum Project
+Use namespaced labels with prefixes for filtering. Create all labels during project initialization.
 
-```sh
-# Setup creates a Project with custom fields and views
-gh workflow run project-setup.yml
-```
-
-This creates a GitHub Project with:
-
-**Custom Fields:**
-- `Status`: Backlog, Ready, In Progress, Blocked, Review, Done
-- `Size`: XS (1), S (2), M (4), L (8), XL (16)
-- `Estimate`: Calculated from Size (1-16 story points)
-- `Priority`: Critical, High, Medium, Low
-- `Type`: Feature, Bug, Chore, Spike, Docs
-- `Sprint`: Auto-managed Iteration field
-- `Sprint Goal`: Text field for sprint objective
-
-**Views:**
-- **Board**: Kanban board grouped by Status
-- **Sprint**: Table view filtered by current Sprint
-- **Backlog**: Table view of items in Backlog, sorted by Priority
-- **Velocity**: Table view with Size, Estimate, and Sprint for metrics
-
-### 2. Define the Product Goal
-
-Ask the user: *"In 1-2 sentences, what is the product and what problem does it solve?"*
-
-Create a pinned issue titled **Product Goal**:
-
-```sh
-GH_PAGER=cat gh issue create \
-  --title "Product Goal" \
-  --body "## Vision
-
-<user's answer>
-
-## Target Users
-
-<who benefits>
-
-## Success Criteria
-
-- [ ] <measurable outcome>" \
-  --label "type:docs"
-
-GH_PAGER=cat gh issue pin <issue-number>
-```
-
-### 3. Create Labels
+| Category | Labels |
+|---|---|
+| **Type** | `type:feature` `type:bug` `type:chore` `type:spike` `type:docs` |
+| **Priority** | `priority:critical` `priority:high` `priority:medium` `priority:low` |
+| **Size** | `size:xs` `size:s` `size:m` `size:l` `size:xl` |
+| **Status** | `status:ready` `status:in-progress` `status:blocked` `status:review` |
+| **Special** | `mvp` `tech-debt` `retrospective` `stale` |
 
 ```sh
 # Remove default labels
@@ -135,7 +103,40 @@ GH_PAGER=cat gh label create "tech-debt"          --color "E4E669" --description
 GH_PAGER=cat gh label create "retrospective"      --color "C5DEF5" --description "Sprint retrospective issue"
 ```
 
-### 4. Identify the MVP
+---
+
+## Project Initialization
+
+### 1. Define the Product Goal
+
+Ask the user: *"In 1-2 sentences, what is the product and what problem does it solve?"*
+
+Create a pinned issue titled **Product Goal**:
+
+```sh
+GH_PAGER=cat gh issue create \
+  --title "Product Goal" \
+  --body "## Vision
+
+<user's answer>
+
+## Target Users
+
+<who benefits>
+
+## Success Criteria
+
+- [ ] <measurable outcome>" \
+  --label "type:docs"
+
+GH_PAGER=cat gh issue pin <issue-number>
+```
+
+### 2. Create Labels
+
+Run the label creation commands from the Labels System section above.
+
+### 3. Identify the MVP
 
 For each feature idea, apply: *"Without this, does the product make no sense?"*
 - Yes → `mvp` + `priority:high` or `priority:critical`
@@ -162,30 +163,141 @@ GH_PAGER=cat gh issue create \
   --label "type:feature,priority:high,size:m,mvp"
 ```
 
-Add issues to the Project:
+### 4. Create the First Sprint
+
 ```sh
-gh project item-add <project-number> --owner <owner> --url <issue-url>
+# Generate due date (portable — works on Linux and macOS)
+DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
+
+GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
+  --field title="Sprint 1" \
+  --field description="Sprint Goal: <what makes this sprint valuable>" \
+  --field due_on="$DUE_DATE"
+```
+
+Assign issues to the milestone:
+
+```sh
+GH_PAGER=cat gh issue edit <number> --milestone "Sprint 1"
 ```
 
 ### 5. Create Repository Scaffolding
 
 Read templates and workflows from the reference files and create these files:
 
-- Issue templates → see [references/templates.md](references/templates.md)
-- PR template → see [references/templates.md](references/templates.md)
-- GitHub Actions workflows → see [references/workflows.md](references/workflows.md) and copy from [templates/workflows/](templates/workflows/)
+- Issue templates → see [references/templates.md](references/templates.md) for `backlog-item.yml` and `bug-report.yml`
+- PR template → see [references/templates.md](references/templates.md) for `PULL_REQUEST_TEMPLATE.md`
+- Labeler config → see [references/templates.md](references/templates.md) for `labeler.yml` and `release-drafter.yml`
+- GitHub Actions workflows → see [references/workflows.md](references/workflows.md) for `labeler.yml`, `stale.yml`, `release-drafter.yml`, `auto-assign.yml`
 
 ```sh
 mkdir -p .github/ISSUE_TEMPLATE .github/workflows
-# Copy workflow files from templates/
-cp skills/github-scrum/templates/workflows/*.yml .github/workflows/
+```
+
+---
+
+## Sprint Lifecycle
+
+### Sprint Planning
+
+1. **Review the backlog** — list `status:ready` issues with no milestone:
+
+   ```sh
+   GH_PAGER=cat gh issue list --label "status:ready" --milestone "" \
+     --json number,title,labels \
+     --jq '.[] | "#\(.number) \(.title) [\(.labels | map(.name) | join(", "))]"'
+   ```
+
+2. **Propose sprint selection** based on: `critical` > `high` > `medium` > `low`, MVP items first, capacity fits duration.
+
+3. **Define the Sprint Goal** — ask: *"What is the single most important outcome of this sprint?"*
+
+4. **Create milestone and assign issues:**
+
+   ```sh
+   # Get next sprint number
+   SPRINT_NUM=$(GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --jq 'length + 1')
+
+   # Generate due date (portable — works on Linux and macOS)
+   DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
+
+   # Create milestone
+   GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
+     --field title="Sprint ${SPRINT_NUM}" \
+     --field description="Sprint Goal: <goal>" \
+     --field due_on="$DUE_DATE"
+
+   # Assign issues
+   GH_PAGER=cat gh issue edit <number> --milestone "Sprint ${SPRINT_NUM}"
+   ```
+
+5. **Mark issues as in-progress** when work begins:
+
+   ```sh
+   GH_PAGER=cat gh issue edit <number> --add-label "status:in-progress" --remove-label "status:ready"
+   ```
+
+### During the Sprint
+
+- **Progress report:**
+
+  ```sh
+  MILESTONE="Sprint N"
+  echo "=== Open ===" && GH_PAGER=cat gh issue list --milestone "$MILESTONE" --state open --json number,title -q '.[] | "#\(.number) \(.title)"'
+  echo "=== Closed ===" && GH_PAGER=cat gh issue list --milestone "$MILESTONE" --state closed --json number,title -q '.[] | "#\(.number) \(.title)"'
+  ```
+
+- **Identify blockers:**
+
+  ```sh
+  GH_PAGER=cat gh issue list --label "status:blocked" --json number,title -q '.[] | "#\(.number) \(.title)"'
+  ```
+
+- **Update status labels** as issues move:
+  - Starting → `status:in-progress` (remove `status:ready`)
+  - PR open → `status:review` (remove `status:in-progress`)
+  - Blocked → `status:blocked` (remove `status:in-progress`)
+  - Done → remove all `status:*`, close the issue
+
+### Sprint Review
+
+1. List completed issues (closed on milestone).
+2. Move carryover issues back to backlog:
+
+   ```sh
+   GH_PAGER=cat gh issue edit <number> --milestone "" \
+     --remove-label "status:in-progress" --remove-label "status:blocked" \
+     --remove-label "status:review" --add-label "status:ready"
+   ```
+
+3. Create a release if there is a usable Increment:
+
+   ```sh
+   GH_PAGER=cat gh release create v<version> --title "Sprint N Release" \
+     --notes "## What's New\n\n$(GH_PAGER=cat gh issue list --milestone 'Sprint N' --state closed --json number,title -q '.[] | "- #\(.number) \(.title)"')\n\n## Sprint Goal\n\n<goal summary>"
+   ```
+
+4. Close the milestone:
+
+   ```sh
+   MILESTONE_NUM=$(GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --jq '.[] | select(.title=="Sprint N") | .number')
+   GH_PAGER=cat gh api repos/{owner}/{repo}/milestones/${MILESTONE_NUM} --method PATCH --field state="closed"
+   ```
+
+### Sprint Retrospective
+
+```sh
+GH_PAGER=cat gh issue create \
+  --title "Retrospective: Sprint N" \
+  --label "retrospective" \
+  --body "## What went well?\n\n- \n\n## What could be improved?\n\n- \n\n## Action items for next sprint\n\n- [ ] \n\n## Metrics\n\n- **Planned:** X issues\n- **Completed:** Y issues\n- **Carried over:** Z issues\n- **Sprint Goal met:** Yes/No"
 ```
 
 ---
 
 ## Definition of Ready
 
-Issues must meet these criteria before being added to a Sprint (Status=Ready):
+Issues must meet these criteria before being added to a Sprint:
 
 **Required:**
 - [ ] Clear description (minimum 50 characters)
@@ -194,140 +306,7 @@ Issues must meet these criteria before being added to a Sprint (Status=Ready):
 - [ ] Type label (type:feature/bug/chore/spike/docs)
 - [ ] Not blocked (no status:blocked)
 
-**Automated Validation:**
-The `dor-validation.yml` workflow automatically checks these criteria when:
-- An issue is labeled `status:ready`
-- An issue is added to the Sprint iteration
-
-If validation fails, the workflow:
-- Removes `status:ready` label
-- Adds `status:needs-refinement` label
-- Comments with the specific missing criteria
-
 See [references/dor-checklist.md](references/dor-checklist.md) for the complete DoR specification.
-
----
-
-## Sprint Lifecycle (Automated)
-
-### Sprint Planning
-
-**Automated by `sprint-start.yml`:**
-
-1. **Manual trigger:**
-   ```sh
-   gh workflow run sprint-start.yml -f sprint_goal="<your sprint goal>" -f sprint_days=14
-   ```
-
-2. **What happens automatically:**
-   - Validates DoR for all issues in current Sprint iteration
-   - Calculates capacity: sum of all Size estimates
-   - Sets the `Sprint Goal` field
-   - Comments a summary in the Project
-   - Issues failing DoR get warnings (but are not removed)
-
-3. **Capacity Calculation:**
-   | Size | Points |
-   |------|--------|
-   | XS   | 1      |
-   | S    | 2      |
-   | M    | 4      |
-   | L    | 8      |
-   | XL   | 16     |
-
-### During the Sprint
-
-**Automated by `pr-status.yml`:**
-
-When a PR is opened:
-- Finds linked issue (from PR body "Closes #N")
-- Updates Project Status → Review
-- Adds `status:review` label
-
-When a PR is merged:
-- Updates Project Status → Done
-- Closes the linked issue
-- Removes all `status:*` labels
-
-**Manual commands (if needed):**
-
-```sh
-# View sprint progress
-gh project view <project-number> --owner <owner>
-
-# List blocked issues
-GH_PAGER=cat gh issue list --label "status:blocked" --json number,title -q '.[] | "#\(.number) \(.title)"'
-
-# Update issue status manually
-GH_PAGER=cat gh issue edit <number> --add-label "status:in-progress" --remove-label "status:ready"
-```
-
-### Sprint Review (Automated)
-
-**Triggered by `sprint-end.yml`:**
-
-When the Sprint iteration ends:
-1. Calculates velocity metrics:
-   - Planned: issues/points at sprint start
-   - Completed: issues/points with Status=Done
-   - Carryover: issues/points not Done
-
-2. Creates retrospective issue with:
-   - Sprint Goal review
-   - Metrics summary
-   - Template for discussion
-
-3. Moves carryover items to Backlog or next Sprint
-
-4. Comments velocity report in Project
-
-### Sprint Retrospective
-
-A retrospective issue is automatically created. The template includes:
-
-```markdown
-## Retrospective: Sprint N
-
-**Sprint Goal:** <goal>
-
-## What went well?
-- 
-
-## What could be improved?
-- 
-
-## Action items for next sprint
-- [ ] 
-
-## Metrics
-- **Planned:** X issues (Y pts)
-- **Completed:** N issues (M pts)
-- **Carryover:** Z issues (W pts)
-- **Sprint Goal met:** Yes/No
-```
-
----
-
-## Velocity & Metrics
-
-**Automated by `velocity-report.yml` (runs weekly):**
-
-The workflow generates a velocity report showing:
-
-```
-Velocity Trend (Last 6 Sprints)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Sprint │ Issues │ Points │ Goal Met
-───────┼────────┼────────┼──────────
-1      │  8/10  │ 24/27  │ ✗
-2      │ 10/10  │ 30/30  │ ✓
-3      │  9/11  │ 28/32  │ ✓
-...
-
-Average Velocity: 27 points/sprint
-```
-
-This helps with capacity planning for future sprints.
 
 ---
 
@@ -344,7 +323,28 @@ Every issue must meet these criteria before closing:
 - [ ] All `status:*` labels removed from the issue
 - [ ] Issue closed with reference to the commit or PR
 
-**Automated:** PR merge triggers automatic cleanup (remove status labels, close issue).
+### Applying the Definition of Done
+
+When the user says an issue is done:
+
+1. **Check acceptance criteria** — read the issue, confirm each criterion is checked.
+2. **Check code quality** — run lint/tests if configured.
+3. **Remove `status:*` labels and close** with a reference:
+
+   ```sh
+   GH_PAGER=cat gh issue edit <number> --remove-label "status:ready" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" 2>/dev/null
+   GH_PAGER=cat gh issue close <number> --comment "Done in <commit-sha or PR #>"
+   ```
+
+If any criterion is not met, tell the user what's missing before closing.
+
+### Closing or Merging a PR
+
+When a PR is closed or merged, **remove all `status:*` labels from the linked issue**. Status labels represent transient workflow state and must not remain as permanent metadata after the work is done.
+
+```sh
+GH_PAGER=cat gh issue edit <linked-issue-number> --remove-label "status:ready" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" 2>/dev/null
+```
 
 ---
 
@@ -357,15 +357,11 @@ Every issue must meet these criteria before closing:
    ```sh
    GH_PAGER=cat gh issue create \
      --title "<specific sub-task>" \
-     --body "Part of #<original-number>
-
-## Acceptance Criteria
-
-- [ ] <specific criterion>" \
+     --body "Part of #<original-number>\n\n## Acceptance Criteria\n\n- [ ] <specific criterion>" \
      --label "type:feature,priority:high,size:m"
    ```
 
-2. Close the original with a comment listing the new issues:
+2. Close the original with a comment listing the new issues (remove `status:*` labels first):
 
    ```sh
    GH_PAGER=cat gh issue edit <original-number> --remove-label "status:ready" --remove-label "status:in-progress" --remove-label "status:blocked" --remove-label "status:review" 2>/dev/null
@@ -381,22 +377,49 @@ GH_PAGER=cat gh issue edit <number> --body "<refined body with acceptance criter
 GH_PAGER=cat gh issue edit <number> --add-label "status:ready"
 ```
 
-The DoR validation workflow will automatically check and confirm readiness.
+### Reprioritize
+
+List open backlog items (no milestone), review with the user, update priority labels:
+
+```sh
+GH_PAGER=cat gh issue list --state open --milestone "" --json number,title,labels \
+  -q '.[] | "#\(.number) \(.title) [\(.labels | map(.name) | join(", "))]"'
+```
 
 ---
 
-## Automation Reference
+## Automation (Optional)
+
+For teams wanting to automate Scrum workflows, this skill provides GitHub Actions workflows:
+
+### GitHub Projects Setup
+
+Create a Scrum Board Project with custom fields:
+
+```sh
+gh workflow run project-setup.yml
+```
+
+This creates a GitHub Project with fields: Status, Size, Estimate, Priority, Type, Sprint, Sprint Goal.
+
+### Automated Workflows
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | `project-setup.yml` | Manual | Create GitHub Project with custom fields |
-| `sprint-start.yml` | Manual / Schedule | Validate DoR, calculate capacity, set sprint goal |
-| `sprint-end.yml` | Schedule (daily) | Calculate velocity, create retro, handle carryover |
-| `pr-status.yml` | PR events | Auto-transition issue status on PR open/merge |
-| `dor-validation.yml` | Issue events | Validate Definition of Ready automatically |
-| `velocity-report.yml` | Schedule (weekly) | Generate velocity trends and metrics |
+| `sprint-start.yml` | Manual/Schedule | Validate DoR, calculate capacity |
+| `sprint-end.yml` | Schedule | Calculate velocity, create retro |
+| `pr-status.yml` | PR events | Auto-transition issue status |
+| `dor-validation.yml` | Issue events | Validate Definition of Ready |
+| `velocity-report.yml` | Schedule | Generate velocity trends |
 
-See [references/workflows.md](references/workflows.md) for detailed workflow documentation.
+To install automation in a repository:
+
+```sh
+cp skills/github-scrum/templates/workflows/*.yml .github/workflows/
+```
+
+See [references/workflows.md](references/workflows.md) for detailed workflow documentation and [references/project-setup.md](references/project-setup.md) for Project configuration.
 
 ---
 
@@ -406,27 +429,15 @@ See [references/workflows.md](references/workflows.md) for detailed workflow doc
 - Planning an MVP or defining what to build first
 - Managing a Product Backlog — creating, refining, prioritizing issues
 - Running Sprints — planning, tracking, reviewing, retrospecting
-- Setting up GitHub Projects for Scrum workflow
+- Setting up labels and milestones for a Scrum workflow
 - Asking for a progress report or sprint status
 - Performing backlog refinement — splitting issues, adding acceptance criteria
 - Closing a sprint and creating a release
-- Calculating velocity for capacity planning
 
 ### Adaptation Guidelines
 
-**Solo developer:** Skip Daily Scrum. Use 1-week sprints. Agent acts as thinking partner. Rely heavily on automation.
+**Solo developer:** Skip Daily Scrum. Use 1-week sprints. Agent acts as thinking partner.
 
-**Small team (2-3):** Use all events. Use 2-week sprints. Retrospectives are more valuable with multiple perspectives. Automation reduces overhead.
+**Small team (2-3):** Use all events. Use 2-week sprints. Retrospectives are more valuable with multiple perspectives.
 
-**Existing project:** Skip MVP identification. Run `project-setup.yml` to create Project, import existing issues, configure fields, start sprinting from current state.
-
----
-
-## Resources
-
-- **Project Setup**: See [references/project-setup.md](references/project-setup.md)
-- **DoR Checklist**: See [references/dor-checklist.md](references/dor-checklist.md)
-- **Workflows**: See [references/workflows.md](references/workflows.md)
-- **Templates**: See [references/templates.md](references/templates.md)
-- **Tooling**: See [references/tooling.md](references/tooling.md)
-- **Workflow Files**: Copy from [templates/workflows/](templates/workflows/)
+**Existing project:** Skip MVP identification. Create labels, triage existing issues, start sprinting from current state.
