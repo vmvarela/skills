@@ -1,11 +1,19 @@
 {
   "eval_id": 1,
-  "name": "Mid-Sprint Issue Management",
-  "prompt": "It's mid-sprint and two things happened: (1) an urgent production bug came in — I need to add it to the current sprint without killing our sprint goal, and (2) ticket AUTH-42 has been blocked for 2 days, blocked by AUTH-38 which was just deployed. Show me how to handle both situations in the AUTH project, sprint milestone 'Sprint 3'.",
+  "name": "Mid-Sprint Issue Management with Projects",
+  "prompt": "It's mid-sprint and two things happened in my GitHub Project: (1) an urgent production bug came in — I need to add it to the current Sprint iteration without killing our sprint goal, and (2) ticket AUTH-42 has been blocked for 2 days, blocked by AUTH-38 which was just deployed. Show me how to handle both situations in the Scrum Board project for mycompany/auth-service.",
   "assertions": [
     {
-      "id": "urgent-ticket-created-or-added",
-      "text": "Shows how to create the urgent bug ticket and/or add it to the sprint milestone"
+      "id": "urgent-ticket-created",
+      "text": "Shows how to create the urgent bug ticket with proper labels"
+    },
+    {
+      "id": "adds-to-project",
+      "text": "Shows how to add the issue to the Scrum Board project using gh project item-add"
+    },
+    {
+      "id": "sets-sprint-field",
+      "text": "Shows how to set the Sprint field to current iteration"
     },
     {
       "id": "sprint-goal-risk-addressed",
@@ -13,15 +21,15 @@
     },
     {
       "id": "blocker-removed-correctly",
-      "text": "Shows how to remove the blocker (unlink or update the blocked ticket status)"
+      "text": "Shows how to remove the blocker by updating Status field from Blocked to Ready"
     },
     {
       "id": "uses-gh-cli-not-ui",
       "text": "Uses gh CLI commands, not instructions to use the GitHub UI"
     },
     {
-      "id": "status-label-guidance",
-      "text": "References status labels (status:blocked, status:in-progress, etc.)"
+      "id": "status-field-guidance",
+      "text": "References Status field values (Backlog, Ready, In Progress, Blocked, Review, Done)"
     }
   ]
 }

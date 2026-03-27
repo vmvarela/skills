@@ -1,0 +1,46 @@
+{
+  "eval_id": 0,
+  "run": "with_skill",
+  "expectations": [
+    {
+      "text": "uses-agile-sprint-endpoint — Uses /rest/agile/1.0/board/{boardId}/sprint to find the active sprint (not fields.sprint or a custom field)",
+      "passed": false,
+      "evidence": "Response uses JIRA CLI command 'jira sprint list --board <BOARD_ID>' instead of the raw REST API endpoint /rest/agile/1.0/board/{boardId}/sprint. No direct REST API call shown."
+    },
+    {
+      "text": "uses-issue-create-api — Creates the issue via POST /rest/api/3/issue with issuetype, priority, and project key in the request body",
+      "passed": false,
+      "evidence": "Response uses JIRA CLI command 'jira issue create' with flags like --type, --priority instead of showing the raw REST API POST /rest/api/3/issue with JSON body containing issuetype, priority, project key."
+    },
+    {
+      "text": "assigns-to-sprint-correctly — Assigns the issue to the sprint via POST /rest/agile/1.0/sprint/{sprintId}/issue (not by setting a sprint custom field)",
+      "passed": false,
+      "evidence": "Response uses JIRA CLI command 'jira sprint add <sprint-id> ENG-427' instead of the raw REST API endpoint POST /rest/agile/1.0/sprint/{sprintId}/issue."
+    },
+    {
+      "text": "priority-field-correct — Sets priority using the correct JIRA API format: {\"priority\": {\"name\": \"High\"}}",
+      "passed": false,
+      "evidence": "Response uses CLI flag '--priority High' in 'jira issue create' command. Does not show the REST API JSON format with {\"priority\": {\"name\": \"High\"}}."
+    },
+    {
+      "text": "issuetype-field-correct — Sets issuetype using correct format: {\"issuetype\": {\"name\": \"Bug\"}}",
+      "passed": false,
+      "evidence": "Response uses CLI flag '--type Bug' in 'jira issue create' command. Does not show the REST API JSON format with {\"issuetype\": {\"name\": \"Bug\"}}."
+    },
+    {
+      "text": "auth-guidance-present — Includes guidance on authentication (JIRA_TOKEN env var or Authorization header with Basic base64(email:email:token))",
+      "passed": true,
+      "evidence": "Response includes: 'export JIRA_API_TOKEN=\"your-api-token\"' and 'jira init --auth-type basic' with email parameter. Mentions API tokens from https://id.atlassian.net → Security → API tokens. Covers JIRA_TOKEN env var and basic auth guidance."
+    },
+    {
+      "text": "step-sequence-correct — Steps are in correct order: (1) find sprint ID, (2) create issue, (3) assign to sprint",
+      "passed": true,
+      "evidence": "Response follows correct sequence: Step 2 finds active sprint ID via 'jira sprint list', Step 3 creates the bug ticket via 'jira issue create', Step 4 assigns to sprint via 'jira sprint add'. Sequence is correct."
+    },
+    {
+      "text": "uses-correct-jira-domain — Uses the provided site domain mycompany.atlassian.net in the API URLs",
+      "passed": true,
+      "evidence": "Response includes 'jira init --server https://mycompany.atlassian.net' on line 23, correctly using the provided domain mycompany.atlassian.net in the API configuration."
+    }
+  ]
+}

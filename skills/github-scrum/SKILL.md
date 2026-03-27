@@ -1,6 +1,6 @@
 ---
 name: github-scrum
-description: Manage software projects with Scrum on GitHub. Plan MVPs, maintain a Product Backlog as Issues, run Sprints as Milestones or Project Iterations, and automate setup with the gh CLI. Adapted for solo developers and small teams (1-3 people). Use this skill whenever the user mentions sprints, issues, backlog, milestones, pull requests, project planning, releases, retrospectives, or any aspect of managing software work on GitHub — even if they don't explicitly mention Scrum.
+description: Manage software projects with Scrum on GitHub. Plan MVPs, maintain a Product Backlog as Issues, run Sprints as Project Iterations, and automate setup with the gh CLI. Adapted for solo developers and small teams (1-3 people). Use this skill whenever the user mentions sprints, issues, backlog, milestones, pull requests, project planning, releases, retrospectives, or any aspect of managing software work on GitHub — even if they don't explicitly mention Scrum.
 ---
 
 # GitHub Scrum
@@ -50,13 +50,13 @@ Always use the Python one-liner when the target platform is unknown. Adjust `day
 | Scrum Concept | GitHub Primitive | Notes |
 |---|---|---|
 | Product Goal | Repo description + pinned issue | Long-term vision in 1-2 sentences |
-| Product Backlog | Issues (open, no milestone) | Ordered by priority labels |
-| Sprint | Milestone (with due date) or Project Iteration | Fixed-length timebox (1-2 weeks recommended) |
-| Sprint Backlog | Issues assigned to a milestone/iteration | Selected during Sprint Planning |
-| Sprint Goal | Milestone description or Project field | Why this sprint is valuable |
+| Product Backlog | Issues with Status=Backlog | Ordered by priority labels |
+| Sprint | Project Iteration (recommended) or Milestone | Fixed-length timebox (1-2 weeks) |
+| Sprint Backlog | Issues in current Sprint iteration | Selected during Sprint Planning |
+| Sprint Goal | Project field `Sprint Goal` | Why this sprint is valuable |
 | Increment | GitHub Release / tag | Usable product at sprint end |
 | Definition of Done | Checklist in issue/PR template | Shared quality standard |
-| Sprint Review | Close milestone + release notes | Inspect what was delivered |
+| Sprint Review | Close iteration + release notes | Inspect what was delivered |
 | Sprint Retrospective | Issue with label `retrospective` | Inspect how work went |
 | Backlog Refinement | Edit issues: add details, resize, reprioritize | Ongoing activity |
 
@@ -105,9 +105,41 @@ GH_PAGER=cat gh label create "retrospective"      --color "C5DEF5" --description
 
 ---
 
-## Project Initialization
+## Project Initialization (GitHub Projects - Recommended)
 
-### 1. Define the Product Goal
+### 1. Create the Scrum Project
+
+First, create a GitHub Project with the Scrum Board template:
+
+```sh
+gh project create --title "Scrum Board" --owner <owner> --template "table"
+```
+
+Add these custom fields to the project:
+
+| Field | Type | Options |
+|-------|------|---------|
+| `Status` | Single select | Backlog, Ready, In Progress, Blocked, Review, Done |
+| `Size` | Single select | XS (1), S (2), M (4), L (8), XL (16) |
+| `Estimate` | Number | Auto-calculated from Size |
+| `Priority` | Single select | Critical, High, Medium, Low |
+| `Type` | Single select | Feature, Bug, Chore, Spike, Docs |
+| `Sprint` | Iteration | Configure 14-day duration |
+| `Sprint Goal` | Text | Sprint objective |
+
+Configure the Sprint iteration field:
+1. Go to Project Settings
+2. Enable "Sprint" iteration field
+3. Set duration to 14 days
+4. Set start date to next Monday
+
+Create views:
+- **Board**: Grouped by Status (Kanban)
+- **Sprint**: Filtered by current Sprint
+- **Backlog**: Status=Backlog, sorted by Priority
+- **Velocity**: Shows Size, Estimate, and Sprint
+
+### 2. Define the Product Goal
 
 Ask the user: *"In 1-2 sentences, what is the product and what problem does it solve?"*
 
@@ -165,6 +197,20 @@ GH_PAGER=cat gh issue create \
 
 ### 4. Create the First Sprint
 
+The Sprint iteration is auto-created when you enable the Iteration field. To view and manage it:
+
+```sh
+# View current sprint
+gh project view <project-number> --owner <owner>
+
+# Set Sprint Goal
+gh project item-edit --id <item-id> --field "Sprint Goal" --value "Your goal here"
+```
+
+### Alternative: Using Milestones
+
+If you prefer traditional milestones:
+
 ```sh
 # Generate due date (portable — works on Linux and macOS)
 DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
@@ -173,11 +219,8 @@ GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
   --field title="Sprint 1" \
   --field description="Sprint Goal: <what makes this sprint valuable>" \
   --field due_on="$DUE_DATE"
-```
 
-Assign issues to the milestone:
-
-```sh
+# Assign issues to milestone
 GH_PAGER=cat gh issue edit <number> --milestone "Sprint 1"
 ```
 
@@ -196,77 +239,104 @@ mkdir -p .github/ISSUE_TEMPLATE .github/workflows
 
 ---
 
-## Sprint Lifecycle
+## Sprint Lifecycle (GitHub Projects)
 
 ### Sprint Planning
 
-1. **Review the backlog** — list `status:ready` issues with no milestone:
+1. **Review the backlog** — list issues with Status=Backlog:
 
    ```sh
-   GH_PAGER=cat gh issue list --label "status:ready" --milestone "" \
+   # View in Sprint view
+   gh project view <project-number> --owner <owner>
+   
+   # Or filter issues
+   GH_PAGER=cat gh issue list --label "status:ready" --state open \
      --json number,title,labels \
      --jq '.[] | "#\(.number) \(.title) [\(.labels | map(.name) | join(", "))]"'
    ```
 
 2. **Propose sprint selection** based on: `critical` > `high` > `medium` > `low`, MVP items first, capacity fits duration.
 
-3. **Define the Sprint Goal** — ask: *"What is the single most important outcome of this sprint?"*
-
-4. **Create milestone and assign issues:**
+3. **Define the Sprint Goal**:
 
    ```sh
-   # Get next sprint number
-   SPRINT_NUM=$(GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --jq 'length + 1')
+   # Set Sprint Goal field in Project
+   gh project item-edit --id <item-id> --field "Sprint Goal" --value "<your goal>"
+   ```
 
-   # Generate due date (portable — works on Linux and macOS)
-   DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
+4. **Add issues to current Sprint:**
 
-   # Create milestone
-   GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
-     --field title="Sprint ${SPRINT_NUM}" \
-     --field description="Sprint Goal: <goal>" \
-     --field due_on="$DUE_DATE"
-
-   # Assign issues
-   GH_PAGER=cat gh issue edit <number> --milestone "Sprint ${SPRINT_NUM}"
+   ```sh
+   # Add issue to Project
+   gh project item-add <project-number> --owner <owner> --url <issue-url>
+   
+   # Set Sprint field to current iteration
+   gh project item-edit --id <item-id> --field "Sprint" --value "Sprint N"
+   
+   # Set Status to Ready
+   gh project item-edit --id <item-id> --field "Status" --value "Ready"
    ```
 
 5. **Mark issues as in-progress** when work begins:
 
    ```sh
+   # Update Status field in Project
+   gh project item-edit --id <item-id> --field "Status" --value "In Progress"
+   
+   # Update labels
    GH_PAGER=cat gh issue edit <number> --add-label "status:in-progress" --remove-label "status:ready"
    ```
 
 ### During the Sprint
 
-- **Progress report:**
+- **Progress report (via Project):**
 
   ```sh
-  MILESTONE="Sprint N"
-  echo "=== Open ===" && GH_PAGER=cat gh issue list --milestone "$MILESTONE" --state open --json number,title -q '.[] | "#\(.number) \(.title)"'
-  echo "=== Closed ===" && GH_PAGER=cat gh issue list --milestone "$MILESTONE" --state closed --json number,title -q '.[] | "#\(.number) \(.title)"'
+  # View Sprint view showing all items
+  gh project view <project-number> --owner <owner>
+  
+  # View items by Status
+  gh project item-list <project-number> --owner <owner> --format json | \
+    jq '.[] | select(.fieldValues.Status == "In Progress")'
   ```
 
 - **Identify blockers:**
 
   ```sh
+  # Filter by Blocked status in Project
+  gh project item-list <project-number> --owner <owner> --format json | \
+    jq '.[] | select(.fieldValues.Status == "Blocked")'
+  
+  # Or via labels
   GH_PAGER=cat gh issue list --label "status:blocked" --json number,title -q '.[] | "#\(.number) \(.title)"'
   ```
 
-- **Update status labels** as issues move:
-  - Starting → `status:in-progress` (remove `status:ready`)
-  - PR open → `status:review` (remove `status:in-progress`)
-  - Blocked → `status:blocked` (remove `status:in-progress`)
-  - Done → remove all `status:*`, close the issue
+- **Update Status field** as issues move:
+  - Starting → `In Progress` (update Project Status field)
+  - PR open → `Review` (update Project Status field)
+  - Blocked → `Blocked` (update Project Status field)
+  - Done → `Done` (update Project Status field)
 
 ### Sprint Review
 
-1. List completed issues (closed on milestone).
-2. Move carryover issues back to backlog:
+1. List completed issues (Status=Done in current Sprint):
 
    ```sh
-   GH_PAGER=cat gh issue edit <number> --milestone "" \
-     --remove-label "status:in-progress" --remove-label "status:blocked" \
+   gh project item-list <project-number> --owner <owner> --format json | \
+     jq '.[] | select(.fieldValues.Status == "Done" and .fieldValues.Sprint == "Sprint N")'
+   ```
+
+2. Move carryover issues to Backlog:
+
+   ```sh
+   # Update Status to Backlog for incomplete items
+   gh project item-edit --id <item-id> --field "Status" --value "Backlog"
+   
+   # Remove from current Sprint (set to empty or next sprint)
+   gh project item-edit --id <item-id> --field "Sprint" --value ""
+   
+   # Update labels
+   GH_PAGER=cat gh issue edit <number> --remove-label "status:in-progress" --remove-label "status:blocked" \
      --remove-label "status:review" --add-label "status:ready"
    ```
 
@@ -274,14 +344,9 @@ mkdir -p .github/ISSUE_TEMPLATE .github/workflows
 
    ```sh
    GH_PAGER=cat gh release create v<version> --title "Sprint N Release" \
-     --notes "## What's New\n\n$(GH_PAGER=cat gh issue list --milestone 'Sprint N' --state closed --json number,title -q '.[] | "- #\(.number) \(.title)"')\n\n## Sprint Goal\n\n<goal summary>"
-   ```
-
-4. Close the milestone:
-
-   ```sh
-   MILESTONE_NUM=$(GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --jq '.[] | select(.title=="Sprint N") | .number')
-   GH_PAGER=cat gh api repos/{owner}/{repo}/milestones/${MILESTONE_NUM} --method PATCH --field state="closed"
+     --notes "## What's New\n\n$(gh project item-list <project-number> --owner <owner> --format json | \
+     jq -r '.[] | select(.fieldValues.Status == "Done" and .fieldValues.Sprint == "Sprint N") | \
+     "- \(.content.title) (#\(.content.number))"')\n\n## Sprint Goal\n\n<goal summary>"
    ```
 
 ### Sprint Retrospective

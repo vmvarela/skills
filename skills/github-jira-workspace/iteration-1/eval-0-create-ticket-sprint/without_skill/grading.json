@@ -1,0 +1,46 @@
+{
+  "eval_id": 0,
+  "run": "without_skill",
+  "expectations": [
+    {
+      "text": "uses-agile-sprint-endpoint — Uses /rest/agile/1.0/board/{boardId}/sprint to find the active sprint (not fields.sprint or a custom field)",
+      "passed": false,
+      "evidence": "Response uses /rest/api/3/board/<board-id>/sprint?state=active (line 45) instead of /rest/agile/1.0/board/{boardId}/sprint. The endpoint path is incorrect."
+    },
+    {
+      "text": "uses-issue-create-api — Creates the issue via POST /rest/api/3/issue with issuetype, priority, and project key in the request body",
+      "passed": false,
+      "evidence": "Response uses POST to $JIRA_URL/rest/api/3/issues (line 82, plural 'issues') instead of /rest/api/3/issue (singular). The endpoint should be /issue not /issues."
+    },
+    {
+      "text": "assigns-to-sprint-correctly — Assigns the issue to the sprint via POST /rest/agile/1.0/sprint/{sprintId}/issue (not by setting a sprint custom field)",
+      "passed": false,
+      "evidence": "Response sets sprint by including 'sprint': <SPRINT_ID> as a field in the issue creation request (line 78), rather than using a separate POST /rest/agile/1.0/sprint/{sprintId}/issue endpoint to assign after creation."
+    },
+    {
+      "text": "priority-field-correct — Sets priority using the correct JIRA API format: {\"priority\": {\"name\": \"High\"}}",
+      "passed": true,
+      "evidence": "Response correctly uses 'priority': { 'name': 'High' } format (lines 75-77 in the cURL example)."
+    },
+    {
+      "text": "issuetype-field-correct — Sets issuetype using correct format: {\"issuetype\": {\"name\": \"Bug\"}}",
+      "passed": true,
+      "evidence": "Response correctly uses 'issuetype': { 'name': 'Bug' } format (lines 72-74 in the cURL example)."
+    },
+    {
+      "text": "auth-guidance-present — Includes guidance on authentication (JIRA_TOKEN env var or Authorization header with Basic base64(email:token))",
+      "passed": true,
+      "evidence": "Response includes authentication guidance using -u flag with email:api-token format (lines 38, 43, 48) and explains to replace with actual JIRA credentials. Instructions at lines 86-87 mention 'your JIRA API token' and 'Account Settings > Security > API tokens'."
+    },
+    {
+      "text": "step-sequence-correct — Steps are in correct order: (1) find sprint ID, (2) create issue, (3) assign to sprint",
+      "passed": false,
+      "evidence": "Response only shows 2 steps in sequence: (1) find sprint ID via board endpoint (lines 43-45), (2) create issue (lines 47-82). Step 3 (assign to sprint via agile endpoint) is missing. The response attempts to assign sprint inline during issue creation instead."
+    },
+    {
+      "text": "uses-correct-jira-domain — Uses the provided site domain mycompany.atlassian.net in the API URLs",
+      "passed": true,
+      "evidence": "Response correctly uses JIRA_URL variable set to 'https://mycompany.atlassian.net' (line 33) and uses it throughout the API calls (lines 40, 45, 82)."
+    }
+  ]
+}

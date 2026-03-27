@@ -1,11 +1,15 @@
 {
   "eval_id": 2,
-  "name": "Sprint Closure & Next Planning",
-  "prompt": "Sprint 3 is ending tomorrow. Walk me through: closing the sprint (handling carryover), running a retrospective, publishing the GitHub release v0.3.0, and planning Sprint 4 with the top backlog items. Repo: mycompany/auth-service, milestone: 'Sprint 3'.",
+  "name": "Sprint Closure with GitHub Projects",
+  "prompt": "Sprint 3 is ending tomorrow in my GitHub Project. Walk me through: closing the sprint (handling carryover by moving incomplete items to Backlog), running a retrospective, publishing the GitHub release v0.3.0, and planning Sprint 4 with the top backlog items. Project: mycompany/auth-service Scrum Board.",
   "assertions": [
     {
       "id": "carryover-handled",
-      "text": "Shows how to move incomplete issues to Sprint 4 milestone (close Sprint 3 milestone or reassign)"
+      "text": "Shows how to move incomplete issues to Backlog status or next Sprint iteration"
+    },
+    {
+      "id": "updates-status-field",
+      "text": "Shows updating Status field from In Progress/Blocked to Backlog"
     },
     {
       "id": "retrospective-ticket-created",
@@ -16,8 +20,8 @@
       "text": "Uses gh release create v0.3.0 with correct flags"
     },
     {
-      "id": "sprint4-milestone-created",
-      "text": "Shows creating Sprint 4 milestone"
+      "id": "next-sprint-prepared",
+      "text": "Shows preparing Sprint 4 by selecting items from Backlog"
     },
     {
       "id": "step-sequence-correct",
@@ -25,7 +29,7 @@
     },
     {
       "id": "uses-gh-cli-throughout",
-      "text": "Consistently uses gh CLI (not curl or API calls for GitHub operations)"
+      "text": "Consistently uses gh CLI including gh project commands"
     }
   ]
 }

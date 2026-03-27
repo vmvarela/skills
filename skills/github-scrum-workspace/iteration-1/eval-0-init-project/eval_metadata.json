@@ -1,8 +1,12 @@
 {
   "eval_id": 0,
-  "name": "Initialize Scrum Project",
-  "prompt": "I'm starting a new project called 'auth-service' on GitHub. Set it up for Scrum: create all the labels (type, priority, size, status namespaces), create Sprint 1 milestone ending in 2 weeks, and create the first sprint planning issue. The repo is mycompany/auth-service.",
+  "name": "Initialize Scrum Project with GitHub Projects",
+  "prompt": "I'm starting a new project called 'auth-service' on GitHub. Set it up for Scrum using GitHub Projects: create a Project called 'Scrum Board' with custom fields (Status, Size, Estimate, Priority, Type, Sprint, Sprint Goal), create all the labels (type, priority, size, status namespaces), and configure the first Sprint iteration starting next Monday for 14 days. The repo is mycompany/auth-service.",
   "assertions": [
+    {
+      "id": "creates-project",
+      "text": "Creates a GitHub Project using gh project create command"
+    },
     {
       "id": "creates-type-labels",
       "text": "Creates type:* labels (type:feature, type:bug, type:chore, etc.) using gh label create"
@@ -16,8 +20,12 @@
       "text": "Creates size:* labels (size:xs, size:s, size:m, size:l, size:xl)"
     },
     {
-      "id": "creates-sprint-milestone",
-      "text": "Creates Sprint 1 milestone with a due date using gh api or gh milestone"
+      "id": "mentions-custom-fields",
+      "text": "Mentions custom fields (Status, Size, Estimate, Priority, Type, Sprint, Sprint Goal)"
+    },
+    {
+      "id": "configures-iteration",
+      "text": "Configures Sprint iteration field with duration and start date"
     },
     {
       "id": "gh-cli-commands-correct",

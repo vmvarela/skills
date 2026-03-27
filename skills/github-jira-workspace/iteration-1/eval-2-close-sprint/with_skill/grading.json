@@ -1,0 +1,56 @@
+{
+  "eval_id": 2,
+  "run": "with_skill",
+  "expectations": [
+    {
+      "id": "moves-issues-via-agile-api",
+      "text": "Moves incomplete issues to Sprint 6 via POST /rest/agile/1.0/sprint/{sprint6Id}/issue with an issues array",
+      "passed": true,
+      "evidence": "Lines 87-97 show correct POST to /rest/agile/1.0/sprint/${SPRINT_6_ID}/issue with issues array: [\"ENG-123\", \"ENG-124\", \"ENG-125\"]. Also in complete script lines 338-342."
+    },
+    {
+      "id": "closes-sprint-via-put",
+      "text": "Closes the sprint via PUT /rest/agile/1.0/sprint/{sprintId} with state: 'closed'",
+      "passed": false,
+      "evidence": "Lines 137-144 show POST (not PUT) to /rest/agile/1.0/sprint/${SPRINT_5_ID} with state: 'closed'. The response uses POST instead of PUT. Also in complete script lines 351-355."
+    },
+    {
+      "id": "releases-version-correctly",
+      "text": "Marks the JIRA version released via PUT /rest/api/3/version/{versionId} with released: true and releaseDate",
+      "passed": true,
+      "evidence": "Lines 195-202 show correct PUT to /rest/api/3/version/${VERSION_ID} with released: true and releaseDate: ${RELEASE_DATE}. Also in complete script lines 361-365."
+    },
+    {
+      "id": "fixversions-format-correct",
+      "text": "If fixVersions is mentioned, uses correct array-of-objects format: [{\"name\": \"v1.5.0\"}] (not a flat string)",
+      "passed": true,
+      "evidence": "fixVersions is not mentioned in the response, so this assertion passes (not required, only wrong usage would fail)."
+    },
+    {
+      "id": "gh-release-create-correct",
+      "text": "Creates GitHub release using 'gh release create v1.5.0 --title ... --notes ... --target main' (or --generate-notes)",
+      "passed": true,
+      "evidence": "Lines 293-298 show correct gh release create command: gh release create v1.5.0 --repo mycompany/eng-backend --title \"v1.5.0\" --body-file /tmp/release-notes.md --target main. Uses --body-file instead of --notes but this is the correct JIRA-aware approach."
+    },
+    {
+      "id": "step-sequence-correct",
+      "text": "Steps in correct order: find incomplete issues, move to Sprint 6, close Sprint 5, release JIRA version, publish GitHub release",
+      "passed": true,
+      "evidence": "Complete workflow script (lines 314-384) follows correct order: Step 1 finds/moves unfinished tickets (lines 330-346), Step 2 closes Sprint 5 (lines 349-356), Step 3 marks v1.5.0 as released (lines 359-366), Step 4 publishes GitHub release (lines 369-377)."
+    },
+    {
+      "id": "jql-for-incomplete-issues",
+      "text": "Uses JQL to find incomplete issues in Sprint 5, e.g., project = ENG AND sprint = 'Sprint 5' AND status != Done",
+      "passed": true,
+      "evidence": "Lines 70 show JQL: project=ENG+AND+sprint=${SPRINT_5_ID}+AND+statusCategory!=Done. Also lines 332 use similar JQL with statusCategory!=Done. While it uses sprint ID instead of name and statusCategory instead of status, this is a valid and more robust approach."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 1,
+    "total": 7,
+    "failed_assertions": [
+      "closes-sprint-via-put"
+    ]
+  }
+}

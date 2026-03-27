@@ -1,0 +1,5 @@
+# Self-Assessment
+
+This response successfully applies the **github-jira** skill to a realistic sprint review scenario. The skill prescribes using the `jira` CLI as the primary tool with `curl` + REST API as the fallback, and the response follows that hierarchy. I provided a complete workflow: (1) setup of the `jira` CLI with proper authentication, (2) a ready-to-use JQL query from the skill's cheatsheet to find blocked stories in the active sprint, and (3) step-by-step guidance to remove the blocker label from ENG-42 using the correct REST API v3 endpoint with the `update` + `remove` syntax (which the skill explicitly recommends in `workflows.md` since the `jira` CLI lacks `--remove-label`).
+
+The response is grounded in the skill's authoritative references: JQL syntax from `jql-cheatsheet.md`, CLI commands from `cli-reference.md`, and the blocker workflow from `workflows.md`. The explanation clarifies *why* each step is necessary and includes both bash/zsh and PowerShell variants for cross-platform usability. The response avoids speculation and maintains accuracy by adhering strictly to the skill's documented practices and actual API capabilities.

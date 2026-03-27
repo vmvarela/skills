@@ -1,0 +1,47 @@
+{
+  "eval_id": 1,
+  "run": "without_skill",
+  "expectations": [
+    {
+      "id": "jql-uses-sprint-filter",
+      "text": "JQL query filters by current sprint (e.g., sprint in openSprints() or sprint = 'active sprint name')",
+      "passed": true,
+      "evidence": "Lines 20, 26, 32, 71, 116 all use 'sprint in openSprints()' in JQL queries"
+    },
+    {
+      "id": "jql-uses-blocked-filter",
+      "text": "JQL query filters for blocked issues (e.g., status = Blocked or issueFunction in linkedIssuesOf(...,'is blocked by') or labels = blocked)",
+      "passed": true,
+      "evidence": "Multiple approaches shown: labels = \"blocked\" (lines 8, 14, 116), issueLink = \"is blocked by\" (line 20), and link IS NOT EMPTY AND issueLink in (\"is blocked by\", \"blocks\") (line 32)"
+    },
+    {
+      "id": "fetches-issue-links",
+      "text": "Shows how to retrieve issue links from ENG-42 via GET /rest/api/3/issue/ENG-42 (to find the link ID)",
+      "passed": true,
+      "evidence": "Lines 76-81 demonstrate: curl -X GET \"https://mycompany.atlassian.net/rest/api/3/issue/ENG-42\" with jq '.fields.issuelinks'"
+    },
+    {
+      "id": "deletes-link-correctly",
+      "text": "Removes the blocker link via DELETE /rest/api/3/issueLink/{linkId}",
+      "passed": true,
+      "evidence": "Lines 83-87 show: curl -X DELETE \"https://mycompany.atlassian.net/rest/api/3/issueLink/LINK_ID\" with correct authentication"
+    },
+    {
+      "id": "no-wrong-link-api",
+      "text": "Does NOT use a non-existent JIRA endpoint to modify links (e.g., does not PUT to /rest/api/3/issue/ENG-42/remotelink for issue links)",
+      "passed": true,
+      "evidence": "Response uses correct DELETE /rest/api/3/issueLink/LINK_ID endpoint; no incorrect endpoints like PUT to /remotelink are used"
+    },
+    {
+      "id": "auth-guidance-present",
+      "text": "Includes authentication guidance or references the JIRA_TOKEN env var",
+      "passed": true,
+      "evidence": "Lines 72, 79, 86, 94 all include -H \"Authorization: Bearer YOUR_API_TOKEN\" header in curl examples, providing clear authentication guidance"
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6
+  }
+}

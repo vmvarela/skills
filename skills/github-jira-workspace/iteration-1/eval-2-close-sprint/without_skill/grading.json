@@ -1,0 +1,57 @@
+{
+  "eval_id": 2,
+  "run": "without_skill",
+  "expectations": [
+    {
+      "id": "moves-issues-via-agile-api",
+      "text": "Moves incomplete issues to Sprint 6 via POST /rest/agile/1.0/sprint/{sprint6Id}/issue with an issues array",
+      "passed": false,
+      "evidence": "Response uses POST /issue/{ISSUE_KEY}/move (line 78), POST /issue/bulk (line 91), and PUT /issue/{ISSUE_KEY} (line 291). None use the correct agile API endpoint POST /rest/agile/1.0/sprint/{sprintId}/issue with issues array."
+    },
+    {
+      "id": "closes-sprint-via-put",
+      "text": "Closes the sprint via PUT /rest/agile/1.0/sprint/{sprintId} with state: 'closed'",
+      "passed": false,
+      "evidence": "Response uses POST /sprint/{SPRINT_5_ID}/close (lines 111, 301) instead of PUT /rest/agile/1.0/sprint/{sprintId} with state: 'closed' payload."
+    },
+    {
+      "id": "releases-version-correctly",
+      "text": "Marks the JIRA version released via PUT /rest/api/3/version/{versionId} with released: true and releaseDate",
+      "passed": true,
+      "evidence": "Response correctly uses PUT /version/{VERSION_ID} with released: true and releaseDate (lines 151-158, 307-310)."
+    },
+    {
+      "id": "fixversions-format-correct",
+      "text": "If fixVersions is mentioned, uses correct array-of-objects format: [{\"name\": \"v1.5.0\"}]. If not mentioned, mark as passed.",
+      "passed": true,
+      "evidence": "fixVersions is not mentioned in the response."
+    },
+    {
+      "id": "gh-release-create-correct",
+      "text": "Creates GitHub release using 'gh release create v1.5.0 --title ... --notes ... --target main' (or --generate-notes)",
+      "passed": true,
+      "evidence": "Response uses 'gh release create v1.5.0 --title \"Version 1.5.0\" --notes \"...\" --target main' (lines 177-200, 315-320)."
+    },
+    {
+      "id": "step-sequence-correct",
+      "text": "Steps in correct order: find incomplete issues, move to Sprint 6, close Sprint 5, release JIRA version, publish GitHub release",
+      "passed": true,
+      "evidence": "Complete automation script follows correct sequence: Task 1 finds/moves issues (lines 269-297), Task 2 closes sprint (lines 300-302), Task 3 releases version (lines 305-311), Task 4 creates GitHub release (lines 314-320)."
+    },
+    {
+      "id": "jql-for-incomplete-issues",
+      "text": "Uses JQL to find incomplete issues in Sprint 5, e.g., project = ENG AND sprint = 'Sprint 5' AND status != Done",
+      "passed": true,
+      "evidence": "Response uses JQL query 'project = ENG AND sprint = {SPRINT_5_ID} AND status NOT IN (Done, Closed, Resolved)' (lines 62, 280). Uses sprint ID variable and status NOT IN which is valid equivalent."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 2,
+    "total": 7,
+    "failed_assertions": [
+      "moves-issues-via-agile-api",
+      "closes-sprint-via-put"
+    ]
+  }
+}

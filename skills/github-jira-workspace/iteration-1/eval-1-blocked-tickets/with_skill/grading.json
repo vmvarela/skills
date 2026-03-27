@@ -1,0 +1,37 @@
+{
+  "eval_id": 1,
+  "run": "with_skill",
+  "expectations": [
+    {
+      "text": "jql-uses-sprint-filter — JQL query filters by current sprint (e.g., sprint in openSprints() or sprint = 'active sprint name')",
+      "passed": true,
+      "evidence": "Line 35: `sprint in openSprints()` is used in the JQL query: `project = ENG AND sprint in openSprints() AND label = blocked AND type = Story`"
+    },
+    {
+      "text": "jql-uses-blocked-filter — JQL query filters for blocked issues (e.g., status = Blocked or issueFunction in linkedIssuesOf(...,'is blocked by') or labels = blocked)",
+      "passed": true,
+      "evidence": "Lines 35, 46: `label = blocked` is used in the JQL query to filter for blocked issues"
+    },
+    {
+      "text": "fetches-issue-links — Shows how to retrieve issue links from ENG-42 via GET /rest/api/3/issue/ENG-42 (to find the link ID)",
+      "passed": false,
+      "evidence": "Line 60 shows `jira issue view ENG-42` using the CLI, but does not demonstrate a REST API GET request to `/rest/api/3/issue/ENG-42` to retrieve issue link information and find the link ID"
+    },
+    {
+      "text": "deletes-link-correctly — Removes the blocker link via DELETE /rest/api/3/issueLink/{linkId}",
+      "passed": false,
+      "evidence": "Lines 78-83 show a PUT request to `/rest/api/3/issue/ENG-42` that removes a label via `{\"update\": {\"labels\": [{\"remove\": \"blocked\"}]}}`, not a DELETE request to `/rest/api/3/issueLink/{linkId}` to remove an issue link"
+    },
+    {
+      "text": "no-wrong-link-api — Does NOT use a non-existent JIRA endpoint to modify links (e.g., does not PUT to /rest/api/3/issue/ENG-42/remotelink for issue links)",
+      "passed": true,
+      "evidence": "The response does not use PUT to `/rest/api/3/issue/ENG-42/remotelink` or other non-existent endpoints. It correctly avoids the wrong link API"
+    },
+    {
+      "text": "auth-guidance-present — Includes authentication guidance or references the JIRA_TOKEN env var",
+      "passed": true,
+      "evidence": "Lines 14, 26, 72-73: Multiple references to `JIRA_API_TOKEN` with setup instructions. Line 79 shows Basic auth header configuration with `Authorization: Basic ${JIRA_AUTH}`"
+    }
+  ],
+  "summary": "4 out of 6 assertions passed. Failed: fetches-issue-links, deletes-link-correctly"
+}

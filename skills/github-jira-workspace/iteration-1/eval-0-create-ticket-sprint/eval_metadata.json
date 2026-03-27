@@ -1,0 +1,39 @@
+{
+  "eval_id": 0,
+  "eval_name": "create-ticket-sprint",
+  "prompt": "We found a login bug today in production — users on Safari can't authenticate with SSO. Create a JIRA ticket for it in the ENG project, set it as high priority and a bug, and assign it to the current active sprint. The JIRA site is mycompany.atlassian.net and the board is ENG.",
+  "assertions": [
+    {
+      "id": "uses-agile-sprint-endpoint",
+      "text": "Uses /rest/agile/1.0/board/{boardId}/sprint to find the active sprint (not fields.sprint or a custom field)"
+    },
+    {
+      "id": "uses-issue-create-api",
+      "text": "Creates the issue via POST /rest/api/3/issue with issuetype, priority, and project key in the request body"
+    },
+    {
+      "id": "assigns-to-sprint-correctly",
+      "text": "Assigns the issue to the sprint via POST /rest/agile/1.0/sprint/{sprintId}/issue (not by setting a sprint custom field)"
+    },
+    {
+      "id": "priority-field-correct",
+      "text": "Sets priority using the correct JIRA API format: {\"priority\": {\"name\": \"High\"}}"
+    },
+    {
+      "id": "issuetype-field-correct",
+      "text": "Sets issuetype using correct format: {\"issuetype\": {\"name\": \"Bug\"}}"
+    },
+    {
+      "id": "auth-guidance-present",
+      "text": "Includes guidance on authentication (JIRA_TOKEN env var or Authorization header with Basic base64(email:token))"
+    },
+    {
+      "id": "step-sequence-correct",
+      "text": "Steps are in correct order: (1) find sprint ID, (2) create issue, (3) assign to sprint"
+    },
+    {
+      "id": "uses-correct-jira-domain",
+      "text": "Uses the provided site domain mycompany.atlassian.net in the API URLs"
+    }
+  ]
+}

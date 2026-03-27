@@ -1,0 +1,31 @@
+{
+  "eval_id": 1,
+  "eval_name": "blocked-tickets",
+  "prompt": "Our sprint review is tomorrow and we still have 3 blocked stories. Show me all blocked tickets in the current ENG sprint using JQL, then walk me through removing the blocker on ENG-42 — it's blocked by ENG-38 which was actually merged yesterday. JIRA site: mycompany.atlassian.net.",
+  "assertions": [
+    {
+      "id": "jql-uses-sprint-filter",
+      "text": "JQL query filters by current sprint (e.g., sprint in openSprints() or sprint = 'active sprint name')"
+    },
+    {
+      "id": "jql-uses-blocked-filter",
+      "text": "JQL query filters for blocked issues (e.g., status = Blocked or issueFunction in linkedIssuesOf(...,'is blocked by') or labels = blocked)"
+    },
+    {
+      "id": "fetches-issue-links",
+      "text": "Shows how to retrieve issue links from ENG-42 via GET /rest/api/3/issue/ENG-42 (to find the link ID)"
+    },
+    {
+      "id": "deletes-link-correctly",
+      "text": "Removes the blocker link via DELETE /rest/api/3/issueLink/{linkId}"
+    },
+    {
+      "id": "no-wrong-link-api",
+      "text": "Does NOT use a non-existent JIRA endpoint to modify links (e.g., does not PUT to /rest/api/3/issue/ENG-42/remotelink for issue links)"
+    },
+    {
+      "id": "auth-guidance-present",
+      "text": "Includes authentication guidance or references the JIRA_TOKEN env var"
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "metadata": {
+    "skill_name": "github-jira",
+    "skill_path": "skills/github-jira",
+    "executor_model": "claude-sonnet-4.6",
+    "analyzer_model": "claude-sonnet-4.6",
+    "timestamp": "2026-03-17T17:00:00Z",
+    "evals_run": [0, 1, 2],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.375,
+        "passed": 3,
+        "failed": 5,
+        "total": 8,
+        "time_seconds": 0,
+        "tokens": 0
+      },
+      "expectations": [
+        {"text": "Uses /rest/agile/1.0/board/{boardId}/sprint to find the active sprint (not fields.sprint or a custom field)", "passed": false, "evidence": "Response uses JIRA CLI command 'jira sprint list --board <BOARD_ID>' instead of the raw REST API endpoint."},
+        {"text": "Creates the issue via POST /rest/api/3/issue with issuetype, priority, and project key in the request body", "passed": false, "evidence": "Response uses JIRA CLI command 'jira issue create' with flags, not raw REST API with JSON body."},
+        {"text": "Assigns the issue to the sprint via POST /rest/agile/1.0/sprint/{sprintId}/issue (not by setting a sprint custom field)", "passed": false, "evidence": "Response uses JIRA CLI command 'jira sprint add <sprint-id> ENG-427' instead of REST API endpoint."},
+        {"text": "Sets priority using the correct JIRA API format: {\"priority\": {\"name\": \"High\"}}", "passed": false, "evidence": "Response uses CLI flag '--priority High', not REST API JSON format."},
+        {"text": "Sets issuetype using correct format: {\"issuetype\": {\"name\": \"Bug\"}}", "passed": false, "evidence": "Response uses CLI flag '--type Bug', not REST API JSON format."},
+        {"text": "Includes guidance on authentication (JIRA_TOKEN env var or Authorization header with Basic base64(email:token))", "passed": true, "evidence": "Response includes export JIRA_API_TOKEN and jira init --auth-type basic."},
+        {"text": "Steps are in correct order: (1) find sprint ID, (2) create issue, (3) assign to sprint", "passed": true, "evidence": "Steps follow correct order: find sprint -> create issue -> assign to sprint."},
+        {"text": "Uses the provided site domain mycompany.atlassian.net in the API URLs", "passed": true, "evidence": "Response includes jira init --server https://mycompany.atlassian.net."}
+      ],
+      "notes": ["Skill guided response toward jira CLI tool rather than raw REST API -- CLI commands are valid but don't satisfy the REST API assertions"]
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 4,
+        "failed": 4,
+        "total": 8,
+        "time_seconds": 0,
+        "tokens": 0
+      },
+      "expectations": [
+        {"text": "Uses /rest/agile/1.0/board/{boardId}/sprint to find the active sprint (not fields.sprint or a custom field)", "passed": false, "evidence": "Uses /rest/api/3/board/<board-id>/sprint?state=active instead of /rest/agile/1.0/board/{boardId}/sprint."},
+        {"text": "Creates the issue via POST /rest/api/3/issue with issuetype, priority, and project key in the request body", "passed": false, "evidence": "Uses POST to /rest/api/3/issues (plural) instead of /rest/api/3/issue (singular)."},
+        {"text": "Assigns the issue to the sprint via POST /rest/agile/1.0/sprint/{sprintId}/issue (not by setting a sprint custom field)", "passed": false, "evidence": "Assigns sprint inline during issue creation instead of separate POST to /rest/agile/1.0/sprint/{sprintId}/issue."},
+        {"text": "Sets priority using the correct JIRA API format: {\"priority\": {\"name\": \"High\"}}", "passed": true, "evidence": "Correctly uses 'priority': { 'name': 'High' }."},
+        {"text": "Sets issuetype using correct format: {\"issuetype\": {\"name\": \"Bug\"}}", "passed": true, "evidence": "Correctly uses 'issuetype': { 'name': 'Bug' }."},
+        {"text": "Includes guidance on authentication (JIRA_TOKEN env var or Authorization header with Basic base64(email:token))", "passed": true, "evidence": "Includes auth with -u email:api-token format and explains how to get API tokens."},
+        {"text": "Steps are in correct order: (1) find sprint ID, (2) create issue, (3) assign to sprint", "passed": false, "evidence": "Missing step 3 -- attempts inline sprint assignment instead."},
+        {"text": "Uses the provided site domain mycompany.atlassian.net in the API URLs", "passed": true, "evidence": "Uses JIRA_URL=https://mycompany.atlassian.net throughout."}
+      ],
+      "notes": ["Baseline used wrong API version for board/sprint endpoint and wrong issue endpoint path (plural)"]
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 0,
+        "tokens": 0
+      },
+      "expectations": [
+        {"text": "JQL query filters by current sprint (e.g., sprint in openSprints() or sprint = 'active sprint name')", "passed": true, "evidence": "Uses sprint in openSprints() in the JQL query."},
+        {"text": "JQL query filters for blocked issues (e.g., status = Blocked or issueFunction in linkedIssuesOf(...,'is blocked by') or labels = blocked)", "passed": true, "evidence": "Uses label = blocked in the JQL query."},
+        {"text": "Shows how to retrieve issue links from ENG-42 via GET /rest/api/3/issue/ENG-42 (to find the link ID)", "passed": false, "evidence": "Shows 'jira issue view ENG-42' CLI command but not REST API GET to retrieve link details and find link ID."},
+        {"text": "Removes the blocker link via DELETE /rest/api/3/issueLink/{linkId}", "passed": false, "evidence": "Uses PUT to remove a label via {\"update\": {\"labels\": [{\"remove\": \"blocked\"}]}} rather than DELETE /rest/api/3/issueLink/{linkId}. Treats blocker as a label, not an issue link."},
+        {"text": "Does NOT use a non-existent JIRA endpoint to modify links (e.g., does not PUT to /rest/api/3/issue/ENG-42/remotelink for issue links)", "passed": true, "evidence": "Does not use the wrong /remotelink endpoint."},
+        {"text": "Includes authentication guidance or references the JIRA_TOKEN env var", "passed": true, "evidence": "Multiple references to JIRA_API_TOKEN with setup instructions."}
+      ],
+      "notes": ["Critical gap: skill response treats 'blocked' as a label concept rather than a JIRA issue link. Did not guide toward the GET issue + DELETE issueLink workflow."]
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 0,
+        "tokens": 0
+      },
+      "expectations": [
+        {"text": "JQL query filters by current sprint (e.g., sprint in openSprints() or sprint = 'active sprint name')", "passed": true, "evidence": "Uses sprint in openSprints() in multiple JQL queries."},
+        {"text": "JQL query filters for blocked issues (e.g., status = Blocked or issueFunction in linkedIssuesOf(...,'is blocked by') or labels = blocked)", "passed": true, "evidence": "Shows labels = blocked, issueLink = 'is blocked by', and other approaches."},
+        {"text": "Shows how to retrieve issue links from ENG-42 via GET /rest/api/3/issue/ENG-42 (to find the link ID)", "passed": true, "evidence": "Shows curl GET /rest/api/3/issue/ENG-42 with jq .fields.issuelinks."},
+        {"text": "Removes the blocker link via DELETE /rest/api/3/issueLink/{linkId}", "passed": true, "evidence": "Shows curl DELETE /rest/api/3/issueLink/LINK_ID with correct auth."},
+        {"text": "Does NOT use a non-existent JIRA endpoint to modify links (e.g., does not PUT to /rest/api/3/issue/ENG-42/remotelink for issue links)", "passed": true, "evidence": "Uses correct DELETE /rest/api/3/issueLink/LINK_ID endpoint."},
+        {"text": "Includes authentication guidance or references the JIRA_TOKEN env var", "passed": true, "evidence": "Includes Authorization: Bearer YOUR_API_TOKEN in all curl examples."}
+      ],
+      "notes": ["Baseline outperformed skill on eval 1 -- correctly handled issue link deletion via REST API"]
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.857,
+        "passed": 6,
+        "failed": 1,
+        "total": 7,
+        "time_seconds": 0,
+        "tokens": 0
+      },
+      "expectations": [
+        {"text": "Moves incomplete issues to Sprint 6 via POST /rest/agile/1.0/sprint/{sprint6Id}/issue with an issues array", "passed": true, "evidence": "Shows correct POST to /rest/agile/1.0/sprint/${SPRINT_6_ID}/issue with issues array."},
+        {"text": "Closes the sprint via PUT /rest/agile/1.0/sprint/{sprintId} with state: 'closed'", "passed": false, "evidence": "Uses POST instead of PUT to /rest/agile/1.0/sprint/${SPRINT_5_ID} with state: 'closed'."},
+        {"text": "Marks the JIRA version released via PUT /rest/api/3/version/{versionId} with released: true and releaseDate", "passed": true, "evidence": "Shows correct PUT to /rest/api/3/version/${VERSION_ID} with released: true and releaseDate."},
+        {"text": "If fixVersions is mentioned, uses correct array-of-objects format: [{\"name\": \"v1.5.0\"}] (not a flat string)", "passed": true, "evidence": "fixVersions not mentioned -- passes by default."},
+        {"text": "Creates GitHub release using 'gh release create v1.5.0 --title ... --notes ... --target main' (or --generate-notes)", "passed": true, "evidence": "Shows gh release create v1.5.0 --repo mycompany/eng-backend --title v1.5.0 --body-file /tmp/release-notes.md --target main."},
+        {"text": "Steps in correct order: find incomplete issues, move to Sprint 6, close Sprint 5, release JIRA version, publish GitHub release", "passed": true, "evidence": "Complete script follows correct order throughout."},
+        {"text": "Uses JQL to find incomplete issues in Sprint 5, e.g., project = ENG AND sprint = 'Sprint 5' AND status != Done", "passed": true, "evidence": "Uses JQL: project=ENG+AND+sprint=${SPRINT_5_ID}+AND+statusCategory!=Done."}
+      ],
+      "notes": ["Minor bug: uses POST instead of PUT to close sprint"]
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.714,
+        "passed": 5,
+        "failed": 2,
+        "total": 7,
+        "time_seconds": 0,
+        "tokens": 0
+      },
+      "expectations": [
+        {"text": "Moves incomplete issues to Sprint 6 via POST /rest/agile/1.0/sprint/{sprint6Id}/issue with an issues array", "passed": false, "evidence": "Uses POST /issue/{key}/move and PUT /issue/{key} instead of correct agile API."},
+        {"text": "Closes the sprint via PUT /rest/agile/1.0/sprint/{sprintId} with state: 'closed'", "passed": false, "evidence": "Uses POST /sprint/{id}/close instead of PUT with state payload."},
+        {"text": "Marks the JIRA version released via PUT /rest/api/3/version/{versionId} with released: true and releaseDate", "passed": true, "evidence": "Correctly uses PUT /version/{id} with released: true and releaseDate."},
+        {"text": "If fixVersions is mentioned, uses correct array-of-objects format: [{\"name\": \"v1.5.0\"}] (not a flat string)", "passed": true, "evidence": "fixVersions not mentioned."},
+        {"text": "Creates GitHub release using 'gh release create v1.5.0 --title ... --notes ... --target main' (or --generate-notes)", "passed": true, "evidence": "Uses gh release create v1.5.0 with correct flags."},
+        {"text": "Steps in correct order: find incomplete issues, move to Sprint 6, close Sprint 5, release JIRA version, publish GitHub release", "passed": true, "evidence": "Automation script follows correct sequence."},
+        {"text": "Uses JQL to find incomplete issues in Sprint 5, e.g., project = ENG AND sprint = 'Sprint 5' AND status != Done", "passed": true, "evidence": "Uses JQL: project = ENG AND sprint = {SPRINT_5_ID} AND status NOT IN (Done, Closed, Resolved)."}
+      ],
+      "notes": ["Baseline used non-existent /issue/{key}/move endpoint and POST /sprint/{id}/close -- both wrong API patterns"]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 0.633, "stddev": 0.201, "min": 0.375, "max": 0.857},
+      "time_seconds": {"mean": 0.0, "stddev": 0.0, "min": 0.0, "max": 0.0},
+      "tokens": {"mean": 0, "stddev": 0, "min": 0, "max": 0}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.738, "stddev": 0.208, "min": 0.5, "max": 1.0},
+      "time_seconds": {"mean": 0.0, "stddev": 0.0, "min": 0.0, "max": 0.0},
+      "tokens": {"mean": 0, "stddev": 0, "min": 0, "max": 0}
+    },
+    "delta": {
+      "pass_rate": "-0.10",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": [
+    "ANALYST: with_skill scores LOWER than without_skill (-10pp). Root cause: the skill guides toward the jira CLI tool which misses REST API assertions.",
+    "ANALYST: Eval 1 (blocked tickets) is the most discriminating -- without_skill 100% vs with_skill 67%. The skill's blocker-removal section focuses on label manipulation, not the JIRA issue link API (GET + DELETE issueLink).",
+    "ANALYST: Eval 0 (create ticket) skill leans on CLI commands. The skill's cli-reference.md promotes jira CLI which is valid but bypasses raw REST API knowledge tested by the assertions.",
+    "ANALYST: Eval 2 (close sprint) is the skill's best showing (86%). Main gap: POST vs PUT for sprint closure -- a single factual error in the workflow documentation.",
+    "ANALYST: Key fixes needed: (1) add issue link workflow (GET links, DELETE issueLink) to blocker resolution section in workflows.md, (2) fix sprint closure from POST to PUT in cli-reference.md and workflows.md, (3) ensure REST API curl examples appear alongside CLI alternatives in SKILL.md.",
+    "ANALYST: The CLI-first approach is a reasonable design choice, but the skill should surface raw API endpoints so users without jira CLI still get actionable guidance."
+  ]
+}

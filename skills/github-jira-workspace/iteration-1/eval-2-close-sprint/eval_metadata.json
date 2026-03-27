@@ -1,0 +1,35 @@
+{
+  "eval_id": 2,
+  "eval_name": "close-sprint",
+  "prompt": "Sprint 5 is ending today. Help me: (1) move all unfinished stories to Sprint 6, (2) close Sprint 5 in JIRA, (3) mark the JIRA version 'v1.5.0' as released, and (4) publish a GitHub release v1.5.0 on the main branch with release notes. Project: ENG, site: mycompany.atlassian.net, repo: mycompany/eng-backend.",
+  "assertions": [
+    {
+      "id": "moves-issues-via-agile-api",
+      "text": "Moves incomplete issues to Sprint 6 via POST /rest/agile/1.0/sprint/{sprint6Id}/issue with an issues array"
+    },
+    {
+      "id": "closes-sprint-via-put",
+      "text": "Closes the sprint via PUT /rest/agile/1.0/sprint/{sprintId} with state: 'closed'"
+    },
+    {
+      "id": "releases-version-correctly",
+      "text": "Marks the JIRA version released via PUT /rest/api/3/version/{versionId} with released: true and releaseDate"
+    },
+    {
+      "id": "fixversions-format-correct",
+      "text": "If fixVersions is set on issues, uses correct array-of-objects format: [{\"name\": \"v1.5.0\"}] (not a flat string)"
+    },
+    {
+      "id": "gh-release-create-correct",
+      "text": "Creates GitHub release using 'gh release create v1.5.0 --title ... --notes ... --target main' (or --generate-notes)"
+    },
+    {
+      "id": "step-sequence-correct",
+      "text": "Steps in correct order: find incomplete issues, move to Sprint 6, close Sprint 5, release JIRA version, publish GitHub release"
+    },
+    {
+      "id": "jql-for-incomplete-issues",
+      "text": "Uses JQL to find incomplete issues in Sprint 5, e.g., project = ENG AND sprint = 'Sprint 5' AND status != Done"
+    }
+  ]
+}
