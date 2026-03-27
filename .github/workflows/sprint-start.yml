@@ -1,0 +1,50 @@
+name: Sprint Start
+
+on:
+  workflow_dispatch:
+    inputs:
+      sprint_goal:
+        description: 'Sprint goal/objective'
+        required: true
+        type: string
+      sprint_days:
+        description: 'Sprint duration in days'
+        required: false
+        default: '14'
+        type: string
+  schedule:
+    - cron: '0 9 * * 1' # Every Monday at 9:00 UTC
+
+permissions:
+  contents: read
+  issues: write
+  repository-projects: write
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd skills/github-scrum/automation
+          npm ci
+
+      - name: Run sprint start
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          SPRINT_GOAL: ${{ github.event.inputs.sprint_goal || '' }}
+          SPRINT_DAYS: ${{ github.event.inputs.sprint_days || '14' }}
+        run: |
+          cd skills/github-scrum/automation
+          npm run build
+          node dist/actions/sprint-start.js
