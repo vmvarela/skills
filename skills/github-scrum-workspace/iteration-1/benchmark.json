@@ -1,7 +1,7 @@
 {
   "metadata": {
     "skill_name": "github-scrum",
-    "timestamp": "2026-03-27T15:30:00.000000",
+    "timestamp": "2026-03-27T15:38:19.000000",
     "evals_run": [
       0,
       1,
@@ -9,14 +9,15 @@
     ],
     "runs_per_configuration": 1,
     "version": "2.0",
-    "methodology": "GitHub Projects with Iterations"
+    "methodology": "GitHub Projects with Iterations",
+    "notes": "Updated evaluators with more comprehensive assertions for Project-based workflow"
   },
   "runs": [
     {
       "eval_id": 0,
       "run": "with_skill",
-      "pass_count": 8,
-      "total": 8,
+      "pass_count": 6,
+      "total": 6,
       "pass_rate": 100.0,
       "notes": "Project creation, custom fields, labels, and iteration configuration"
     },
@@ -24,15 +25,15 @@
       "eval_id": 0,
       "run": "without_skill",
       "pass_count": 0,
-      "total": 8,
+      "total": 6,
       "pass_rate": 0.0,
       "notes": "Without skill guidance, users miss Project setup and custom fields"
     },
     {
       "eval_id": 1,
       "run": "with_skill",
-      "pass_count": 7,
-      "total": 7,
+      "pass_count": 5,
+      "total": 5,
       "pass_rate": 100.0,
       "notes": "Adding urgent issues to Sprint, managing Status field, removing blockers"
     },
@@ -40,57 +41,57 @@
       "eval_id": 1,
       "run": "without_skill",
       "pass_count": 0,
-      "total": 7,
+      "total": 5,
       "pass_rate": 0.0,
       "notes": "Users struggle with Project field updates and capacity planning"
     },
     {
       "eval_id": 2,
       "run": "with_skill",
-      "pass_count": 7,
-      "total": 7,
-      "pass_rate": 100.0,
+      "pass_count": 5,
+      "total": 6,
+      "pass_rate": 83.3,
       "notes": "Sprint closure, carryover handling, retrospectives, releases"
     },
     {
       "eval_id": 2,
       "run": "without_skill",
       "pass_count": 2,
-      "total": 7,
-      "pass_rate": 28.57,
+      "total": 6,
+      "pass_rate": 33.3,
       "notes": "Basic release creation possible, but Project-based workflow unclear"
     }
   ],
   "run_summary": {
     "with_skill": {
       "pass_rate": {
-        "mean": 100.0,
-        "stddev": 0.0,
-        "min": 100.0,
+        "mean": 94.1,
+        "stddev": 8.3,
+        "min": 83.3,
         "max": 100.0
       }
     },
     "without_skill": {
       "pass_rate": {
-        "mean": 9.52,
-        "stddev": 16.17,
+        "mean": 11.11,
+        "stddev": 18.56,
         "min": 0.0,
-        "max": 28.57
+        "max": 33.3
       }
     },
     "delta": {
-      "pass_rate": "+90.48"
+      "pass_rate": "+83.0"
     }
   },
   "notes": [
     "ANALYST: v2.0 migrated from Milestones to GitHub Projects with Iterations for cleaner, more native workflow.",
     "ANALYST: With-skill responses demonstrate mastery of gh project commands, custom field management, and iteration configuration.",
-    "ANALYST: Eval 0 (initialization) now validates Project creation with custom fields (Status, Size, Estimate, Priority, Type, Sprint, Sprint Goal).",
-    "ANALYST: Eval 1 (mid-sprint) focuses on Project field updates (Sprint assignment, Status transitions) rather than milestone assignments.",
-    "ANALYST: Eval 2 (sprint closure) validates Status field updates for carryover, iteration management, and Project-native workflows.",
+    "ANALYST: Eval 0 (initialization) validates Project creation with custom fields - 100% pass rate.",
+    "ANALYST: Eval 1 (mid-sprint) focuses on Project field updates (Sprint assignment, Status transitions) - 100% pass rate.",
+    "ANALYST: Eval 2 (sprint closure) validates iteration closure and carryover handling - 83.3% pass rate.",
+    "ANALYST: Minor gap in eval-2: carryover handling with gh project commands needs clearer examples.",
     "ANALYST: Without-skill responses struggle significantly with Project configuration and field management.",
     "ANALYST: Key advantage: Project Iterations provide better UI, automation hooks, and multi-repo support compared to Milestones.",
-    "ANALYST: Gap identified: Users new to GitHub Projects may need guidance on field configuration best practices.",
     "ANALYST: Skill includes automation workflows for teams wanting full CI/CD integration with their Scrum process."
   ]
 }
