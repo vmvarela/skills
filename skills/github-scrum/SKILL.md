@@ -26,6 +26,32 @@ Reference: [The 2020 Scrum Guide](https://scrumguides.org/scrum-guide.html).
 
 For a full command reference, see [references/tooling.md](references/tooling.md).
 
+### Authentication & Permissions
+
+**Required for GitHub Projects:**
+
+The `gh` CLI needs additional scopes to work with GitHub Projects:
+
+```sh
+# Refresh authentication with project scopes
+gh auth refresh -s project,read:project
+```
+
+**Verify authentication:**
+```sh
+# Check current scopes
+gh auth status
+
+# List projects (should succeed if authenticated)
+gh project list --owner <your-username>
+```
+
+**Required scopes:**
+- `project` - Create and manage GitHub Projects
+- `read:project` - Read project data
+- `repo` - Access repository issues and PRs
+- `write:discussion` - Post comments (optional)
+
 ### Cross-platform Date Generation
 
 When generating ISO 8601 dates for milestone `due_on` fields, use a portable snippet — `date -d` is GNU/Linux only and fails on macOS:

@@ -4,9 +4,30 @@ Instructions for setting up the Scrum Board using GitHub Projects.
 
 ## Prerequisites
 
-- GitHub CLI (`gh`) installed and authenticated
+- GitHub CLI (`gh`) installed and authenticated with project scopes
 - Repository admin access
 - Node.js 18+ (for automation scripts)
+
+### Authentication Setup
+
+Before creating projects, ensure your `gh` CLI has the required permissions:
+
+```sh
+# Check current authentication status
+gh auth status
+
+# If projects fail, refresh with required scopes
+gh auth refresh -s project,read:project
+
+# Verify project access
+gh project list --owner <your-username>
+```
+
+**Required scopes:**
+- `project` - Create and manage GitHub Projects
+- `read:project` - Read project data and configurations
+- `repo` - Access repository issues and PRs
+- `workflow` - Manage GitHub Actions workflows (for automation)
 
 ## Automated Setup
 
