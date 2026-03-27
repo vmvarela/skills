@@ -1,0 +1,29 @@
+{
+  "name": "github-scrum-automation",
+  "version": "1.0.0",
+  "description": "GitHub Scrum automation scripts for sprint management",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "project-setup": "node dist/actions/project-setup.js",
+    "sprint-start": "node dist/actions/sprint-start.js",
+    "sprint-end": "node dist/actions/sprint-end.js",
+    "pr-status": "node dist/actions/pr-status.js",
+    "dor-validation": "node dist/actions/dor-validation.js",
+    "velocity-report": "node dist/actions/velocity-report.js"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0",
+    "@octokit/graphql": "^8.0.0",
+    "@octokit/rest": "^20.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

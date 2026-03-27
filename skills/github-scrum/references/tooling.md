@@ -17,11 +17,10 @@ GH_PAGER=cat gh label list
 ## Issues
 
 ```sh
-GH_PAGER=cat gh issue create --title "<title>" --body "<body>" --label "<l1>,<l2>" --milestone "<name>"
-GH_PAGER=cat gh issue list --milestone "<name>" --state open --label "<label>"
-GH_PAGER=cat gh issue list --state open --milestone "" --json number,title,labels -q '.[] | "#\(.number) \(.title)"'
+GH_PAGER=cat gh issue create --title "<title>" --body "<body>" --label "<l1>,<l2>"
+GH_PAGER=cat gh issue list --label "<label>" --state open
+GH_PAGER=cat gh issue list --state open --json number,title,labels -q '.[] | "#\(.number) \(.title)"'
 GH_PAGER=cat gh issue edit <number> --add-label "<label>" --remove-label "<label>"
-GH_PAGER=cat gh issue edit <number> --milestone "<name>"
 GH_PAGER=cat gh issue close <number> --comment "<reason>"
 GH_PAGER=cat gh issue view <number>
 GH_PAGER=cat gh issue pin <number>
@@ -37,26 +36,94 @@ GH_PAGER=cat gh pr view <number>
 GH_PAGER=cat gh pr edit <number> --add-label "<label>" --remove-label "<label>"
 ```
 
-## Milestones (via API)
+## GitHub Projects
+
+### Project Management
 
 ```sh
-# List milestones
-GH_PAGER=cat gh api repos/{owner}/{repo}/milestones \
-  --jq '.[] | "\(.number): \(.title) (due: \(.due_on | split("T")[0]))"'
+# List projects
+gh project list --owner <owner>
 
-# Create milestone
-GH_PAGER=cat gh api repos/{owner}/{repo}/milestones --method POST \
-  --field title="Sprint N" \
-  --field description="Sprint Goal: ..." \
-  --field due_on="2026-03-06T23:59:59Z"
+# Create project
+gh project create --title "Scrum Board" --owner <owner>
 
-# Close milestone
-GH_PAGER=cat gh api repos/{owner}/{repo}/milestones/<number> \
-  --method PATCH --field state="closed"
+# View project
+gh project view <number> --owner <owner>
 
-# Update milestone
-GH_PAGER=cat gh api repos/{owner}/{repo}/milestones/<number> \
-  --method PATCH --field description="Updated goal"
+# Edit project
+gh project edit <number> --owner <owner> --title "New Title"
+```
+
+### Project Items
+
+```sh
+# Add issue to project
+gh project item-add <project-number> --owner <owner> --url <issue-url>
+
+# List items
+gh project item-list <project-number> --owner <owner>
+
+# Edit item fields
+gh project item-edit --id <item-id> --field "Status" --value "In Progress"
+
+# Delete item
+gh project item-delete --id <item-id>
+```
+
+### Project Fields
+
+Projects use custom fields for Scrum tracking:
+
+```sh
+# Get project fields (requires GraphQL)
+gh api graphql -f query='
+  query($owner: String!, $number: Int!) {
+    organization(login: $owner) {
+      projectV2(number: $number) {
+        fields(first: 20) {
+          nodes {
+            ... on ProjectV2Field {
+              name
+              id
+            }
+            ... on ProjectV2SingleSelectField {
+              name
+              id
+              options {
+                name
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+' -f owner=<owner> -F number=<project-number>
+```
+
+### Project API (GraphQL)
+
+For advanced operations, use the GitHub GraphQL API:
+
+```sh
+# Update project item field
+gh api graphql -f query='
+  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+    updateProjectV2ItemFieldValue(
+      input: {
+        projectId: $projectId
+        itemId: $itemId
+        fieldId: $fieldId
+        value: {singleSelectOptionId: $optionId}
+      }
+    ) {
+      projectV2Item {
+        id
+      }
+    }
+  }
+' -f projectId=<project-id> -f itemId=<item-id> -f fieldId=<field-id> -f optionId=<option-id>
 ```
 
 ## Releases
@@ -64,4 +131,49 @@ GH_PAGER=cat gh api repos/{owner}/{repo}/milestones/<number> \
 ```sh
 GH_PAGER=cat gh release create v<version> --title "<title>" --notes "<markdown>"
 GH_PAGER=cat gh release list
+```
+
+## Workflows
+
+```sh
+# List workflows
+gh workflow list
+
+# View workflow
+gh workflow view <workflow-name>
+
+# Run workflow
+gh workflow run <workflow-name>
+
+# Run workflow with inputs
+gh workflow run sprint-start.yml -f sprint_goal="Add auth" -f sprint_days=14
+
+# Enable/disable workflow
+gh workflow enable <workflow-id>
+gh workflow disable <workflow-id>
+```
+
+## Environment Variables
+
+Always set these when running commands:
+
+```sh
+# Prevent interactive pagers
+export GH_PAGER=cat
+
+# Use GitHub token for API calls
+export GITHUB_TOKEN=<your-token>
+```
+
+## Cross-platform Date Generation
+
+```sh
+# Portable (Linux + macOS)
+DUE_DATE=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=14)).strftime('%Y-%m-%dT00:00:00Z'))")
+
+# Linux/GNU only
+DUE_DATE=$(date -u -d "+14 days" +%Y-%m-%dT00:00:00Z)
+
+# macOS/BSD only
+DUE_DATE=$(date -u -v+14d +%Y-%m-%dT00:00:00Z)
 ```

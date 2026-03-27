@@ -1,0 +1,45 @@
+name: DoR Validation
+
+on:
+  issues:
+    types: [labeled, edited, opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to validate'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  repository-projects: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd skills/github-scrum/automation
+          npm ci
+
+      - name: Run DoR validation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || github.event.inputs.issue_number }}
+          ISSUE_LABEL: ${{ github.event.label.name || '' }}
+        run: |
+          cd skills/github-scrum/automation
+          npm run build
+          node dist/actions/dor-validation.js
