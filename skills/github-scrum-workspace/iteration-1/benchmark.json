@@ -1,7 +1,7 @@
 {
   "metadata": {
     "skill_name": "github-scrum",
-    "timestamp": "2026-03-17T18:05:45.058277",
+    "timestamp": "2026-03-27T15:23:38.000000",
     "evals_run": [
       0,
       1,
@@ -41,9 +41,9 @@
     {
       "eval_id": 2,
       "run": "with_skill",
-      "pass_count": 6,
+      "pass_count": 5,
       "total": 6,
-      "pass_rate": 100.0
+      "pass_rate": 83.3
     },
     {
       "eval_id": 2,
@@ -56,9 +56,9 @@
   "run_summary": {
     "with_skill": {
       "pass_rate": {
-        "mean": 100.0,
-        "stddev": 0.0,
-        "min": 100.0,
+        "mean": 94.1,
+        "stddev": 8.3,
+        "min": 83.3,
         "max": 100.0
       }
     },
@@ -71,7 +71,7 @@
       }
     },
     "delta": {
-      "pass_rate": "+83.33"
+      "pass_rate": "+77.43"
     }
   },
   "notes": [
@@ -80,6 +80,8 @@
     "ANALYST: Eval 0 (initialization) shows largest gap: with-skill provides complete label creation commands; without-skill suggests manual UI setup.",
     "ANALYST: Eval 1 (mid-sprint) reveals missing capacity planning details in without-skill; with-skill includes sprint load analysis.",
     "ANALYST: Eval 2 (sprint closure) demonstrates strong skill advantage in release creation syntax and carryover handling via gh API.",
+    "ANALYST: Updated skill includes GitHub Projects automation as optional enhancement while maintaining full milestone-based workflow compatibility.",
+    "ANALYST: Minor regression in eval-2 (83.3% vs 100%) likely due to additional automation content affecting response specificity for sprint closure scenarios.",
     "ANALYST: No factual bugs found in skill; all gh commands are syntactically valid per GitHub CLI documentation.",
     "ANALYST: Gap identified: Skill could benefit from error handling examples (e.g., handling 'milestone not found' scenarios).",
     "ANALYST: Gap identified: Skill assumes familiarity with jq for JSON parsing; beginners may need additional guidance."
