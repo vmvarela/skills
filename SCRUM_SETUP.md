@@ -39,7 +39,26 @@ Installed in `.github/workflows/`:
 - `SCRUM_SETUP.md` - Setup guide
 - Issue #45 - Product Goal (pinned)
 
+## Quick Setup
+
+Run the interactive setup script:
+```bash
+./scripts/setup-scrum.sh
+```
+
+Or configure manually below.
+
 ## Manual Steps Required
+
+### Option 1: Automated (Recommended)
+```bash
+# Run the setup script
+./scripts/setup-scrum.sh
+
+# Follow the interactive prompts
+```
+
+### Option 2: Manual Configuration
 
 Visit https://github.com/users/vmvarela/projects/5/settings/fields
 
@@ -73,15 +92,29 @@ Number field for story points
 
 ## Next Steps
 
-1. **Configure fields manually** in project settings
-2. **Set field values** for each issue based on labels:
-   - #42: Status=In Progress, Size=S, Priority=Medium, Type=Chore
-   - #37-#25: Status=Backlog, set Size/Priority/Type from labels
-3. **Start Sprint 1** by running:
+1. **Run the setup script** (if not already done):
+   ```bash
+   ./scripts/setup-scrum.sh
+   ```
+
+2. **Configure custom fields** manually in project settings (script will guide you)
+
+3. **Set field values** for each issue based on their labels:
+   - Issue #42: Status=In Progress, Size=S, Priority=Medium, Type=Chore
+   - Issues #37-#25: Status=Backlog, set Size/Priority/Type from labels
+
+4. **Create custom views** in the project:
+   - Board view (Kanban)
+   - Sprint view (filtered by current iteration)
+   - Backlog view (Status=Backlog)
+   - Velocity view (metrics)
+
+5. **Start Sprint 1**:
    ```bash
    gh workflow run sprint-start.yml -f sprint_goal="Complete GitHub Actions updates and improve documentation"
    ```
-4. **Monitor automation** - workflows will auto-validate DoR and track progress
+
+6. **Monitor automation** - workflows will auto-validate DoR and track progress
 
 ## Available Commands
 
