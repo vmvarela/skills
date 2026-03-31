@@ -36,6 +36,12 @@ Use this when your team already uses JIRA Cloud and you want your agent to bridg
 
 Best for: teams running Scrum in JIRA who want GitHub PRs and releases to stay in sync with tickets automatically, without manual copy-paste between tools.
 
+### [pragmatic-build](skills/pragmatic-build/SKILL.md)
+
+Use this when your agent writes code that works but is hard to change — full of duplication, tangled dependencies, and untested assumptions. Grounded in *The Pragmatic Programmer*: eliminate duplication at the knowledge level, decouple with Tell-Don't-Ask, crash early on impossible states, drive design through tests, and refactor continuously rather than letting entropy accumulate.
+
+Best for: implementing features, fixing bugs, refactoring sessions — any moment where "it works" is not the same as "it is maintainable."
+
 ### [strategic-planning](skills/strategic-planning/SKILL.md)
 
 Use this when your agent needs to design a system, plan modules, or make architectural decisions before writing any code. Grounded in the principles from *A Philosophy of Software Design*: design deep modules, hide information aggressively, pull complexity downward so callers stay simple, eliminate errors by redefining semantics, and always design it twice before committing.
