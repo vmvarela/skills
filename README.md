@@ -1,6 +1,8 @@
 # skills
 
-Most AI coding agents generate plausible code but lack *method* — they don't derive programs from specifications, they write documentation nobody reads, and they manage projects by vibes. This repo contains agent skills that fix all three. Install them once and your agent writes provably correct code, concise useful docs, and runs your project with Scrum discipline.
+## The Big Idea
+
+Most code generation agents write plausible code but lack *method*: they guess at logic instead of deriving it, produce wall-of-text docs nobody reads, and manage projects by vibes. This repo fixes that. Each skill here makes your agent write correct code by construction, concise docs that people *actually* read, and run projects with clear, low-friction processes. Install once—your agent stops guessing and starts working methodically.
 
 ## Quick Start
 
@@ -8,46 +10,25 @@ Most AI coding agents generate plausible code but lack *method* — they don't d
 npx skills add vmvarela/skills
 ```
 
-That's it. All skills in this repo become available to your agent (GitHub Copilot, Claude Code, Cursor, Windsurf, and [others](https://skills.sh)).
+All skills here become available to your agent instantly (Copilot, Claude, Cursor, Windsurf, and [others](https://skills.sh)).
 
 ## Skills
 
-### [methodical-programming](skills/methodical-programming/SKILL.md)
-
-Use this when you want your agent to *derive* correct code from formal specifications instead of guessing-and-testing. The skill teaches precondition/postcondition reasoning, structural induction over algebraic data types, recursive design with bounding functions, and loop invariant derivation. Language-agnostic — works for Python, Haskell, Java, or anything else.
-
-Best for: algorithms, data structure operations, any function where "it works on my examples" isn't good enough.
-
 ### [pragmatic-docs](skills/pragmatic-docs/SKILL.md)
+Write documentation that respects the reader's time and actually gets read. Starts with "why," uses real examples, acknowledges trade-offs, and never pads with boilerplate. Inspired by [Philip Greenspun](https://philip.greenspun.com/). *Example*: Your README now makes the project’s why and use cases obvious in one glance.
 
-Use this when your agent writes documentation that sounds like a corporate press release or a template with 15 empty sections. Inspired by [Philip Greenspun's](https://philip.greenspun.com/) approach to software documentation: start with why the thing exists, show real examples inline, acknowledge limitations honestly, and stop writing before the reader stops reading.
-
-Best for: READMEs, module docs, CONTRIBUTING.md, architecture docs — any Markdown that humans are supposed to actually read.
-
-### [github-scrum](skills/github-scrum/SKILL.md)
-
-Use this when you want your agent to manage a software project with Scrum on GitHub. It maps Scrum artifacts to GitHub primitives — Product Backlog as Issues, Sprints as Milestones, Increments as Releases — and automates setup with `gh` CLI. Covers the full lifecycle: MVP identification, backlog creation with proper labels, sprint planning, progress tracking, reviews, and retrospectives. Adapted for solo developers and small teams (1-3 people) who don't need a Jira-sized tool to ship software.
-
-Best for: starting new projects from scratch with an MVP, organizing work into sprints, maintaining a healthy backlog, and keeping a sustainable development cadence on GitHub.
-
-### [github-jira](skills/github-jira/SKILL.md)
-
-Use this when your team already uses JIRA Cloud and you want your agent to bridge it with GitHub. The JIRA ticket key (e.g. `PROJECT-123`) becomes the thread that connects branches, PRs, and releases. Includes GitHub Actions that auto-label PRs with priority and size pulled from JIRA fields, and sync GitHub Releases back to JIRA versions. Works with any JIRA project — configure it once with your domain, project key, board name, and component.
-
-Best for: teams running Scrum in JIRA who want GitHub PRs and releases to stay in sync with tickets automatically, without manual copy-paste between tools.
+Best for: READMEs, module docs, setup and architecture—anything meant for humans.
 
 ### [pragmatic-build](skills/pragmatic-build/SKILL.md)
+Eliminate duplication, decouple code, program deliberately, and always refactor when it feels wrong. Grounded in *The Pragmatic Programmer*: Tell-Don't-Ask, crash early on the impossible, test to guide design, and never leave "broken windows". *Example*: You’ll stop making changes in four places when the requirements change in one.
 
-Use this when your agent writes code that works but is hard to change — full of duplication, tangled dependencies, and untested assumptions. Grounded in *The Pragmatic Programmer*: eliminate duplication at the knowledge level, decouple with Tell-Don't-Ask, crash early on impossible states, drive design through tests, and refactor continuously rather than letting entropy accumulate.
-
-Best for: implementing features, fixing bugs, refactoring sessions — any moment where "it works" is not the same as "it is maintainable."
+Best for: Building features, fixing bugs, refactoring—any code you don’t want to fear six months later.
 
 ### [strategic-planning](skills/strategic-planning/SKILL.md)
+Plan modules that are deep, information-hiding, and simple to use. Pull complexity downward, rework API designs before writing a line of implementation, and always sketch two radically different designs before you choose. Based on *A Philosophy of Software Design*. *Example*: No more pass-through wrappers—every module earns its place and simplifies the codebase.
 
-Use this when your agent needs to design a system, plan modules, or make architectural decisions before writing any code. Grounded in the principles from *A Philosophy of Software Design*: design deep modules, hide information aggressively, pull complexity downward so callers stay simple, eliminate errors by redefining semantics, and always design it twice before committing.
-
-Best for: greenfield architecture, module boundary decisions, interface design, any moment where the first idea is probably not the best one.
+Best for: Greenfield architecture, interface decisions, and any moment where you want future-you to thank you.
 
 ## Under the Hood
 
-Each skill lives in `skills/<name>/SKILL.md` — a Markdown file with YAML frontmatter (`name` and `description`). The `npx skills` CLI reads this structure directly from the GitHub repo. To add a new skill, create a directory under `skills/` with a `SKILL.md` inside it. No build step, no config files, no registry.
+Each skill lives at `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`). Add a skill = create a directory, write SKILL.md, done. No builds, configs, or magic registries.
