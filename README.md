@@ -36,6 +36,12 @@ Use this when your team already uses JIRA Cloud and you want your agent to bridg
 
 Best for: teams running Scrum in JIRA who want GitHub PRs and releases to stay in sync with tickets automatically, without manual copy-paste between tools.
 
+### [strategic-planning](skills/strategic-planning/SKILL.md)
+
+Use this when your agent needs to design a system, plan modules, or make architectural decisions before writing any code. Grounded in the principles from *A Philosophy of Software Design*: design deep modules, hide information aggressively, pull complexity downward so callers stay simple, eliminate errors by redefining semantics, and always design it twice before committing.
+
+Best for: greenfield architecture, module boundary decisions, interface design, any moment where the first idea is probably not the best one.
+
 ## Under the Hood
 
 Each skill lives in `skills/<name>/SKILL.md` — a Markdown file with YAML frontmatter (`name` and `description`). The `npx skills` CLI reads this structure directly from the GitHub repo. To add a new skill, create a directory under `skills/` with a `SKILL.md` inside it. No build step, no config files, no registry.
