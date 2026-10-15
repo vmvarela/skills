@@ -29,6 +29,21 @@ Plan modules that are deep, information-hiding, and simple to use. Pull complexi
 
 Best for: Greenfield architecture, interface decisions, and any moment where you want future-you to thank you.
 
+### [methodical-programming](skills/methodical-programming/SKILL.md)
+Derive correct programs from formal pre/postconditions using axiomatic semantics, loop invariants, and termination proofs. Language-agnostic. *Example*: Your loop comes with an invariant and a bounding function before the first line of code.
+
+Best for: Implementing functions that must be correct, reasoning about loops and recursion, deriving tests from postconditions.
+
+### [create-pr](skills/create-pr/SKILL.md)
+Open a pull request with a Conventional Commits title and a structured body linked to its issue. *Example*: Every PR says what, why, how it was tested, and what remains.
+
+Best for: Teams that want consistent PR titles and bodies across repositories.
+
+### [workspace-context](skills/workspace-context/SKILL.md)
+Edit a workspace's `AGENTS.md` and `context/*.md` in the five-section format, keeping each file at most 50 lines. Requires a workspace with `AGENTS.md` and `context/`. *Example*: Repo guidance stays short, verified, and easy to scan.
+
+Best for: Maintaining agent guidance across multiple repositories in one workspace.
+
 ## Under the Hood
 
 Each skill lives at `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`). Add a skill = create a directory, write SKILL.md, done. No builds, configs, or magic registries.
