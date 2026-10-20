@@ -1,43 +1,36 @@
 ---
 name: create-pr
 description: >
-  Create a pull request with a Conventional Commits title and a structured
-  body. Use for "create a pull request", "open a PR", "write PR body",
-  /create-pr.
+  Draft or open a pull request when asked, using a Conventional Commits title,
+  the applicable template and verified validation results. Use for /create-pr.
 ---
 
-Draft the PR, show a preview, and only publish after the review gate passes.
+Follow AGENTS.md and the selected `context/<repo>.md` for authorization,
+validation, screenshots and publication. This procedure does not redefine them.
+It uses GitHub's `gh` CLI; other code hosts need their own variant.
 
-## Title
-- Inspect the repo's last ~10 merged PRs: `gh pr list --state merged --limit 10 --json title`.
-- If a clear majority style exists (Conventional Commits prefixes or another consistent format), match it.
-- Otherwise use Conventional Commits: `<type>(<scope>): <summary>`.
-- Types: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `chore`, `build`, `ci`, `style`, `revert`.
-- Semantic-release repos: follow AGENTS.md — align analyzer/notes parsing and use `!` and `BREAKING CHANGE:` footers.
+## Draft
 
-## Body (English only)
-Exactly these sections, in this order:
-- `## What` — what changes.
-- `## Why` — motivation.
-- `## How tested` — validation actually run. Never invent results.
-- `## Remaining work` — write `None` if nothing is left.
+1. Read the task issue, final diff and any repository PR template.
+2. Use a Conventional Commit title per AGENTS.md.
+3. Build the English body from AGENTS.md and the repository PR template;
+   retain mandatory fields.
+4. Link the verified task issue with `Closes #N` or the template's equivalent.
+   Resolve it from task context first; a branch name is only a hint. Ask only
+   when the issue is genuinely unknown or ambiguous.
+5. Report checks actually run, limitations and remaining work. Follow AGENTS.md
+   for visual-change captures.
+6. Show the proposed title and body. A draft-only request ends here.
 
-## Rules
-- **Template**: if `.github/pull_request_template.md`, `.github/PULL_REQUEST_TEMPLATE.md`, or `.github/pull_request_template/` exists, the template takes precedence. Keep and fill all its mandatory sections; add the four sections above where they fit, mapping to overlapping template sections. Never drop template requirements.
-- **Linked issue (mandatory)**: the body must contain `Closes #N` (or the template's equivalent). Detect `N` from the branch name; if not detected, ask the user before drafting. Never guess.
-- **Visual UI changes**: if the diff touches UI/visual files, the body must include before/after screenshot links. If screenshots are missing, stop and report — do not publish.
-- **No AI attribution** or "Generated with" phrases.
-- **Multiline bodies**: use `--body-file <file>`, never an inline `--body`.
-- **SSH-alias repos**: pass `--repo vmvarela/<repo>` (or set `GH_REPO`).
+## Publish
 
-## Flow
-1. Draft title + body; show a preview to the user.
-2. Create the PR only when BOTH hold:
-   - Repo validation from `context/<repo>.md` passed, AND
-   - The final diff was reviewed locally with findings resolved.
-   If either is not satisfied, stop at the preview.
-3. Create: `gh pr create --title <title> --body-file <file>`.
-4. Never push to the default branch.
+For an open or update request, publish only after satisfying the validation and
+review gate in AGENTS.md.
+Resolve the repository per AGENTS.md; ask if ambiguous. Use its default base
+branch unless `context/<repo>.md` specifies another; ask if unclear.
+Then run:
 
-## Boundaries
-Previews before the gate are drafts; do not run `gh pr create` until step 2 passes. If the user asks to merge, tag, or publish releases, that needs explicit approval in the same turn — this skill does not merge.
+`gh pr create --repo <owner/repo> --base <base> --title <title> --body-file <file>`
+
+Verify the resulting PR and update the issue's current state. Merge and release
+actions are outside this procedure and follow AGENTS.md authorization.
