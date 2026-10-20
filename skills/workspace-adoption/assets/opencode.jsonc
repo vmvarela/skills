@@ -1,0 +1,10 @@
+{
+  // Shared plugin defaults. Adoption appends only the plugins the user selects.
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": [
+    "oh-my-opencode-slim@latest",
+    "@dietrichgebert/ponytail@latest",
+    "@tarquinen/opencode-dcp@latest",
+    "@slkiser/opencode-quota@latest"
+  ]
+}

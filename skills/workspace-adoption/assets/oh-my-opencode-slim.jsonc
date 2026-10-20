@@ -1,0 +1,33 @@
+{
+  // Shared default routing. Adoption adds only the agents a workspace does not define.
+  "preset": "default",
+
+  "presets": {
+    "default": {
+      "orchestrator": {
+        "model": "github-copilot/claude-haiku-5.5",
+        "variant": "high"
+      },
+      "oracle": {
+        "model": "openai/gpt-6.1-sol",
+        "variant": "max"
+      },
+      "explorer": {
+        "model": "github-copilot/claude-haiku-5.5",
+        "variant": "low"
+      },
+      "designer": {
+        "model": "github-copilot/claude-haiku-5.5",
+        "variant": "medium"
+      },
+      "fixer": {
+        "model": "github-copilot/claude-haiku-5.5",
+        "variant": "low"
+      },
+      "council": {
+        "model": "github-copilot/claude-haiku-5.5",
+        "variant": "high"
+      }
+    }
+  }
+}
