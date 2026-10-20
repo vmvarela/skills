@@ -9,20 +9,13 @@ template: |
 categories:
   - title: "🚀 Features"
     labels:
-      - "type:feature"
+      - "enhancement"
   - title: "🐛 Bug Fixes"
     labels:
-      - "type:bug"
-  - title: "🧰 Maintenance"
-    labels:
-      - "type:chore"
-      - "tech-debt"
+      - "bug"
   - title: "📝 Documentation"
     labels:
-      - "type:docs"
-  - title: "🔬 Spikes & Research"
-    labels:
-      - "type:spike"
+      - "documentation"
 change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
 change-title-escapes: '\<*_&'
 version-resolver:
@@ -31,10 +24,9 @@ version-resolver:
       - "breaking"
   minor:
     labels:
-      - "type:feature"
+      - "enhancement"
   patch:
     labels:
-      - "type:bug"
-      - "type:chore"
-      - "type:docs"
+      - "bug"
+      - "documentation"
   default: patch
