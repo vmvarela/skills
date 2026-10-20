@@ -1,0 +1,13 @@
+{
+  "name": "preset-optimizer-skill",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cli": "bun scripts/cli.ts",
+    "test": "bun test tests/"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2",
+    "jsonc-parser": "^3.3.1"
+  }
+}
