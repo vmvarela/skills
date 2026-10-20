@@ -54,6 +54,11 @@ Triage GitHub work for a workspace: assigned issues, unlinked open pull requests
 
 Best for: Teams that track work in GitHub issues across repositories under `projects/<repo>/`.
 
+### [preset-optimizer](skills/preset-optimizer/SKILL.md)
+Builds or edits an `oh-my-opencode-slim` preset by matching your OpenCode models to Epoch AI's ECI quality scores and base-tier prices, validating each reasoning variant before writing. Requires Bun (`bun install` in the skill directory); the Epoch data cache is regenerated on first use and never shipped. *Example*: Pick a cost-aware preset for each agent, with the ECI snapshot date shown and stale data flagged.
+
+Best for: OpenCode users who route agents across models and want the choice grounded in published quality data.
+
 ## Under the Hood
 
 Each skill lives at `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`). Add a skill = create a directory, write SKILL.md, done. No builds, configs, or magic registries.
