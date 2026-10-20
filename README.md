@@ -49,6 +49,11 @@ Adopt, check, update or undo this package's shared operating rules and OpenCode 
 
 Best for: Workspaces that already have their own rules, plugins or model routing.
 
+### [issue-workflow-github](skills/issue-workflow-github/SKILL.md)
+Triage GitHub work for a workspace: assigned issues, unlinked open pull requests, security alerts and a backlog declared in AGENTS.md, then execute a chosen issue through `create-pr`. Failed reads are reported as incomplete, never as an empty inbox. *Example*: Ask for your inbox and get up to three ranked options with reasons; nothing changes until you choose.
+
+Best for: Teams that track work in GitHub issues across repositories under `projects/<repo>/`.
+
 ## Under the Hood
 
 Each skill lives at `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`). Add a skill = create a directory, write SKILL.md, done. No builds, configs, or magic registries.
