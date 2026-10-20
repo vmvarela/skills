@@ -1,18 +1,12 @@
-"type:docs":
+documentation:
   - changed-files:
       - any-glob-to-any-file:
-          - "**/*.md"
-          - "LICENSE*"
+          - "README.md"
+          - "docs/**"
           - "CHANGELOG*"
+          - "LICENSE*"
 
-"type:chore":
-  - changed-files:
-      - any-glob-to-any-file:
-          - ".github/**"
-          - ".editorconfig"
-          - ".gitignore"
-
-"type:feature":
+enhancement:
   - changed-files:
       - any-glob-to-any-file:
           - "skills/*/SKILL.md"
