@@ -101,9 +101,12 @@ agent. Never substitute a model silently.
    entries. Preserve other keys, comments and formatting.
 4. In the Slim config: add only the missing preset and agent sections. Keep local
    values, and set `preset` only if the file has none.
-5. Write `state.json`: `version`, selected components, `added` (entries this
-   adoption introduced), `excluded.plugins`, `kept_conflicts`, and the model check
-   date.
+5. Write `state.json`: `version` (the installed `metadata.version`), `source` (the
+   exact tag installed, for example `vmvarela/skills@v0.6.0`; never a branch name),
+   selected components, `added` (entries this adoption introduced),
+   `excluded.plugins`, `kept_conflicts`, and the model check date. If the install
+   came from a branch, record that value as-is and say in the report that the
+   version alone cannot identify the package content.
 6. Delete `staging/`. Do not commit; if the workspace uses Git, suggest one
    separate commit.
 
@@ -129,8 +132,14 @@ local edits to added entries since adoption (compare the current values with
 
 Precondition: the user installed the new version with
 `npx skills add <owner>/skills#<tag> --skill workspace-adoption --agent opencode`
-and started a new session. Confirm the installed `metadata.version` is newer than
-`state.version`.
+and started a new session. Compare the installed `metadata.version` with
+`state.version`:
+
+- Newer: proceed with the merge below.
+- Equal, but the installed `assets/` differ from `base/<version>/`: the package
+  changed without a version bump. Report it and ask whether to review it as an
+  update; do not treat it as "no changes".
+- Equal and identical: report "up to date" and stop.
 
 For each owned item (the rules file, each shared plugin, each shared Slim agent),
 compare three values: **base** (`base/<old>`), **new** (the installed assets), and
