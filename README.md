@@ -44,6 +44,11 @@ Edit a workspace's `AGENTS.md` and `context/*.md` in the five-section format, ke
 
 Best for: Maintaining agent guidance across multiple repositories in one workspace.
 
+### [workspace-adoption](skills/workspace-adoption/SKILL.md)
+Adopt, check, update or undo this package's shared operating rules and OpenCode defaults in a workspace. It asks which components to adopt, previews every change, and never overrides your local `AGENTS.md`, context or configuration. *Example*: Your existing plugins and model routing stay as they are; only the missing defaults you approve are added.
+
+Best for: Workspaces that already have their own rules, plugins or model routing.
+
 ## Under the Hood
 
 Each skill lives at `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`). Add a skill = create a directory, write SKILL.md, done. No builds, configs, or magic registries.
